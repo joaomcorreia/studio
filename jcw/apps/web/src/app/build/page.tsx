@@ -64,6 +64,7 @@ export default function BuildPage() {
   })
   const [showCreateFolder, setShowCreateFolder] = useState(false)
   const [newFolderName, setNewFolderName] = useState('')
+  const [selectedGalleryCategory, setSelectedGalleryCategory] = useState('All')
   const [isLoading, setIsLoading] = useState(false)
   const [isGeneratingAI, setIsGeneratingAI] = useState(false)
   const [result, setResult] = useState<any>(null)
@@ -334,6 +335,58 @@ export default function BuildPage() {
         ? prev.filter(i => i !== index)
         : [...prev, index]
     )
+  }
+
+  const moveImageToFolder = (imageIndex: number, sourceFolder: string, targetFolder: string) => {
+    const sourceFolderData = imagesByFolder[sourceFolder]
+    if (!sourceFolderData || imageIndex >= sourceFolderData.files.length) return
+
+    const file = sourceFolderData.files[imageIndex]
+    const preview = sourceFolderData.previews[imageIndex]
+
+    // Remove from source folder
+    const newSourceFiles = sourceFolderData.files.filter((_, i) => i !== imageIndex)
+    const newSourcePreviews = sourceFolderData.previews.filter((_, i) => i !== imageIndex)
+
+    // Add to target folder
+    const targetFolderData = imagesByFolder[targetFolder]
+    const newTargetFiles = [...targetFolderData.files, file]
+    const newTargetPreviews = [...targetFolderData.previews, preview]
+
+    // Update both folders
+    setImagesByFolder(prev => ({
+      ...prev,
+      [sourceFolder]: {
+        files: newSourceFiles,
+        previews: newSourcePreviews
+      },
+      [targetFolder]: {
+        files: newTargetFiles,
+        previews: newTargetPreviews
+      }
+    }))
+
+    // Update legacy arrays
+    const allFiles: File[] = []
+    const allPreviews: string[] = []
+    Object.entries(imagesByFolder).forEach(([folderName, folder]) => {
+      if (folderName === sourceFolder) {
+        allFiles.push(...newSourceFiles)
+        allPreviews.push(...newSourcePreviews)
+      } else if (folderName === targetFolder) {
+        allFiles.push(...newTargetFiles)
+        allPreviews.push(...newTargetPreviews)
+      } else {
+        allFiles.push(...folder.files)
+        allPreviews.push(...folder.previews)
+      }
+    })
+    
+    setUploadedImages(allFiles)
+    setImagePreviews(allPreviews)
+
+    // Clear selections
+    setSelectedImages([])
   }
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -946,15 +999,20 @@ export default function BuildPage() {
 
               {/* Image Upload Section - appears after selecting services */}
               {showImageSection && (
-                <div className="bg-orange-50 rounded-lg p-6 mb-6 border-l-4 border-orange-500 animate-fadeIn">
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-xl font-semibold text-gray-900">📸 Your Images</h2>
+                <div className="bg-white border border-gray-300 mb-6 animate-fadeIn" style={{boxShadow: '0 1px 3px rgba(0,0,0,0.1)'}}>
+                  {/* Header Section - File Explorer Style */}
+                  <div className="flex items-center justify-between px-3 py-2 bg-gray-100 border-b border-gray-300">
                     <div className="flex items-center space-x-2">
-                      <span className="text-sm text-gray-600">Current Folder:</span>
+                      <span className="text-base">�</span>
+                      <h2 className="text-sm font-medium text-gray-800">Your Images</h2>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-xs text-gray-600">Current Folder:</span>
                       <select 
                         value={currentFolder}
                         onChange={(e) => setCurrentFolder(e.target.value)}
-                        className="text-sm bg-white border border-gray-300 rounded px-3 py-1"
+                        className="text-xs bg-white border border-gray-400 px-2 py-1 text-gray-800 focus:outline-none"
+                        style={{fontSize: '11px'}}
                       >
                         {folders.map(folder => (
                           <option key={folder} value={folder}>
@@ -980,23 +1038,17 @@ export default function BuildPage() {
                         onClick={selectAllImages}
                         className="inline-flex items-center px-3 py-1.5 bg-gray-500 text-white text-sm font-medium rounded hover:bg-gray-600 transition-colors"
                       >
-                        {selectedImages.length === imagesByFolder[currentFolder]?.files.length && imagesByFolder[currentFolder]?.files.length > 0
-                          ? '☑️ Deselect All'
-                          : '☑️ Select All'
-                        }
+                        ☑️ Select All
                       </button>
                       {selectedImages.length > 0 && (
                         <button
                           type="button"
                           onClick={deleteSelectedImages}
-                          className="inline-flex items-center px-3 py-1.5 bg-red-500 text-white text-sm font-medium rounded hover:bg-red-600 transition-colors"
+                          className="inline-flex items-center px-2 py-1 bg-red-500 text-white text-xs rounded border border-red-600 hover:bg-red-600 transition-colors"
                         >
-                          🗑️ Delete Selected ({selectedImages.length})
+                          🗑️ Delete Selected
                         </button>
                       )}
-                    </div>
-                    <div className="text-sm text-gray-600">
-                      {imagesByFolder[currentFolder]?.files.length || 0} images
                     </div>
                   </div>
 
@@ -1033,129 +1085,190 @@ export default function BuildPage() {
                     </div>
                   )}
 
-                  <div className="bg-orange-100 rounded-lg p-3 mb-4">
-                    <p className="text-sm text-orange-800 font-medium">
-                      ✨ Add photos to showcase your business and make your website more engaging!
-                    </p>
-                    <p className="text-xs text-orange-600 mt-1">
-                      Upload product photos, team pictures, location shots, or any images that represent your business.
-                    </p>
-                  </div>
-
-                  {/* Upload Area */}
-                  <div
-                    className={`border-2 border-dashed rounded-lg p-8 text-center transition-all duration-200 ${
-                      isDragging 
-                        ? 'border-orange-400 bg-orange-100' 
-                        : 'border-gray-300 hover:border-orange-400 hover:bg-gray-50'
-                    }`}
-                    onDragOver={handleDragOver}
-                    onDragLeave={handleDragLeave}
-                    onDrop={handleDrop}
-                  >
-                    <div className="text-4xl mb-4">📁</div>
-                    <p className="text-lg font-medium text-gray-700 mb-2">
-                      Drag & drop your images here
-                    </p>
-                    <p className="text-sm text-gray-500 mb-4">
-                      Files will be added to "{currentFolder}" folder
-                    </p>
-                    <input
-                      type="file"
-                      multiple
-                      accept="image/*"
-                      onChange={(e) => handleImageUpload(e.target.files)}
-                      className="hidden"
-                      id="image-upload"
-                    />
-                    <label
-                      htmlFor="image-upload"
-                      className="inline-flex items-center px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600 cursor-pointer transition-colors"
-                    >
-                      <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                      </svg>
-                      Choose Images
-                    </label>
-                    <p className="text-xs text-gray-400 mt-2">
-                      Maximum 5MB per image • JPG, PNG, WebP supported
-                    </p>
-                  </div>
-
-                  {/* Folder Selector for smaller screens */}
-                  {folders.length > 1 && (
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {folders.map(folder => (
-                        <button
-                          key={folder}
-                          type="button"
-                          onClick={() => setCurrentFolder(folder)}
-                          className={`px-3 py-1.5 text-sm rounded-lg font-medium transition-colors ${
-                            currentFolder === folder
-                              ? 'bg-orange-500 text-white'
-                              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                          }`}
-                        >
-                          📁 {folder} ({imagesByFolder[folder]?.files.length || 0})
-                        </button>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Image Previews */}
-                  {imagesByFolder[currentFolder]?.files.length > 0 && (
-                    <div className="mt-6">
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        {imagesByFolder[currentFolder].previews.map((preview, index) => (
-                          <div key={index} className="relative group">
-                            {/* Selection overlay */}
-                            <div 
-                              className={`absolute inset-0 border-2 rounded-lg transition-all cursor-pointer ${
-                                selectedImages.includes(index)
-                                  ? 'border-blue-500 bg-blue-100 bg-opacity-30'
-                                  : 'border-transparent hover:border-gray-300'
+                  {/* Main Content Area - Two Column Layout */}
+                  <div className="flex min-h-[400px]">
+                    {/* Left Sidebar - Windows Explorer Style */}
+                    <div className="w-56 bg-gray-50 border-r border-gray-300 p-2">
+                      <div className="space-y-0">
+                        {folders.map(folder => {
+                          const folderCount = imagesByFolder[folder]?.files.length || 0
+                          return (
+                            <div
+                              key={folder}
+                              onClick={() => setCurrentFolder(folder)}
+                              onDragOver={(e) => {
+                                e.preventDefault()
+                                e.currentTarget.classList.add('bg-green-100', 'border-green-400', 'border-2', 'border-dashed')
+                              }}
+                              onDragLeave={(e) => {
+                                e.currentTarget.classList.remove('bg-green-100', 'border-green-400', 'border-2', 'border-dashed')
+                              }}
+                              onDrop={(e) => {
+                                e.preventDefault()
+                                e.currentTarget.classList.remove('bg-green-100', 'border-green-400', 'border-2', 'border-dashed')
+                                
+                                const draggedImageIndex = parseInt(e.dataTransfer.getData('imageIndex'))
+                                const sourceFolder = e.dataTransfer.getData('sourceFolder')
+                                
+                                if (folder !== sourceFolder && !isNaN(draggedImageIndex)) {
+                                  moveImageToFolder(draggedImageIndex, sourceFolder, folder)
+                                }
+                              }}
+                              className={`flex items-center justify-between px-2 py-1 cursor-pointer transition-colors text-xs hover:bg-gray-200 rounded ${
+                                currentFolder === folder
+                                  ? 'bg-blue-200 text-blue-800 font-medium'
+                                  : 'text-gray-700'
                               }`}
-                              onClick={() => toggleImageSelection(index)}
                             >
-                              {selectedImages.includes(index) && (
-                                <div className="absolute top-2 left-2 w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs">
-                                  ✓
-                                </div>
-                              )}
+                              <div className="flex items-center space-x-1.5">
+                                <span className="text-yellow-600 text-sm">📁</span>
+                                <span className="truncate">{folder}</span>
+                              </div>
+                              <span className="text-gray-500 text-xs">{folderCount}</span>
                             </div>
-                            <img
-                              src={preview}
-                              alt={`Upload ${index + 1}`}
-                              className="w-full h-24 object-cover rounded-lg border border-gray-200"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => removeImage(index)}
-                              className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                            >
-                              ×
-                            </button>
-                            <div className="absolute bottom-1 left-1 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">
-                              {(imagesByFolder[currentFolder].files[index].size / 1024 / 1024).toFixed(1)}MB
-                            </div>
-                          </div>
-                        ))}
+                          )
+                        })}
+                      </div>
+
+                      {/* Compact Upload Area */}
+                      <div className="mt-2 pt-2 border-t border-gray-300">
+                        <div
+                          className={`border border-dashed rounded p-3 text-center transition-all duration-200 ${
+                            isDragging 
+                              ? 'border-blue-400 bg-blue-50' 
+                              : 'border-gray-400 hover:border-blue-400 hover:bg-gray-100'
+                          }`}
+                          onDragOver={handleDragOver}
+                          onDragLeave={handleDragLeave}
+                          onDrop={handleDrop}
+                        >
+                          <div className="text-lg mb-1">📁</div>
+                          <p className="text-xs text-gray-600 mb-2">Drop files here</p>
+                          <input
+                            type="file"
+                            multiple
+                            accept="image/*"
+                            onChange={(e) => handleImageUpload(e.target.files)}
+                            className="hidden"
+                            id="image-upload"
+                          />
+                          <label
+                            htmlFor="image-upload"
+                            className="inline-block px-2 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 cursor-pointer transition-colors"
+                          >
+                            Browse
+                          </label>
+                        </div>
                       </div>
                     </div>
-                  )}
 
-                  {/* Empty folder state */}
-                  {imagesByFolder[currentFolder]?.files.length === 0 && (
-                    <div className="mt-6 text-center py-8 bg-gray-50 rounded-lg">
-                      <div className="text-4xl mb-3">📂</div>
-                      <p className="text-gray-500 text-sm">
-                        No images in "{currentFolder}" folder yet
-                      </p>
-                      <p className="text-gray-400 text-xs mt-1">
-                        Upload some images to get started
-                      </p>
+                    {/* Right Content Area - Compact Image Grid */}
+                    <div className="flex-1 p-2">
+                      {imagesByFolder[currentFolder]?.files.length > 0 ? (
+                        <div className="flex flex-wrap gap-3 items-start">
+                          {imagesByFolder[currentFolder].previews.map((preview, index) => (
+                            <div 
+                              key={index} 
+                              className="relative group flex-shrink-0"
+                              draggable
+                              onDragStart={(e) => {
+                                e.dataTransfer.setData('imageIndex', index.toString())
+                                e.dataTransfer.setData('sourceFolder', currentFolder)
+                                e.dataTransfer.effectAllowed = 'move'
+                              }}
+                            >
+                              {/* Selection overlay */}
+                              <div 
+                                className={`absolute inset-0 border-2 transition-all cursor-pointer z-10 ${
+                                  selectedImages.includes(index)
+                                    ? 'border-blue-500 bg-blue-500 bg-opacity-30'
+                                    : 'border-transparent hover:border-blue-300'
+                                }`}
+                                onClick={() => toggleImageSelection(index)}
+                              >
+                                {selectedImages.includes(index) && (
+                                  <div className="absolute top-1 left-1 w-4 h-4 bg-blue-600 text-white rounded-sm flex items-center justify-center text-xs">
+                                    ✓
+                                  </div>
+                                )}
+                              </div>
+                              
+                              <div className="relative bg-white border border-gray-300 overflow-hidden cursor-move" style={{width: 'auto', maxWidth: '200px'}}>
+                                <img
+                                  src={preview}
+                                  alt={`Image ${index + 1}`}
+                                  className="block h-auto object-contain pointer-events-none"
+                                  style={{
+                                    maxHeight: '150px',
+                                    minHeight: '80px',
+                                    width: 'auto',
+                                    maxWidth: '200px'
+                                  }}
+                                />
+                                
+                                {/* File info overlay */}
+                                <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-70 text-white text-xs px-1 py-1 pointer-events-none">
+                                  <div className="truncate text-xs font-medium">
+                                    {imagesByFolder[currentFolder].files[index].name.split('.')[0]}
+                                  </div>
+                                </div>
+
+                                {/* Delete button */}
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    removeImage(index)
+                                  }}
+                                  className="absolute top-1 right-1 bg-red-500 text-white rounded-sm w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 z-20"
+                                >
+                                  ×
+                                </button>
+
+                                {/* Drag indicator */}
+                                <div className="absolute top-1 left-1 text-gray-500 opacity-0 group-hover:opacity-50 transition-opacity pointer-events-none">
+                                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M10 6L6 10l4 4 4-4-4-4z"/>
+                                  </svg>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center h-full text-center py-8">
+                          <div className="text-4xl mb-3">📂</div>
+                          <h3 className="text-sm font-medium text-gray-700 mb-2">
+                            No images in "{currentFolder}"
+                          </h3>
+                          <p className="text-gray-500 text-xs mb-3">
+                            Drag files here or use the sidebar upload
+                          </p>
+                          <label
+                            htmlFor="image-upload"
+                            className="inline-flex items-center px-3 py-1.5 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 cursor-pointer transition-colors"
+                          >
+                            <svg className="mr-1 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                            Upload Files
+                          </label>
+                        </div>
+                      )}
                     </div>
-                  )}
+                  </div>
+
+                  {/* Status Bar - Windows Explorer Style */}
+                  <div className="px-3 py-1.5 bg-gray-100 border-t border-gray-300 text-xs text-gray-600">
+                    <div className="flex items-center justify-between">
+                      <span>
+                        {imagesByFolder[currentFolder]?.files.length || 0} items
+                      </span>
+                      <span>
+                        JPG, PNG, WebP • Max 5MB
+                      </span>
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -1297,26 +1410,78 @@ export default function BuildPage() {
                       Gallery
                     </h3>
                     <div className="ml-3">
-                      <div className="grid grid-cols-3 gap-1">
-                        {imagePreviews.slice(0, 6).map((preview, index) => (
-                          <div key={index} className="relative">
-                            <img
-                              src={preview}
-                              alt={`Gallery ${index + 1}`}
-                              className="w-full h-16 object-cover rounded border"
-                            />
-                            {index === 5 && uploadedImages.length > 6 && (
-                              <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center rounded">
-                                <span className="text-white text-xs font-bold">
-                                  +{uploadedImages.length - 6}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        ))}
+                      {/* Category Filters */}
+                      <div className="mb-3 flex flex-wrap gap-1">
+                        {['All', ...folders.filter(f => imagesByFolder[f]?.files.length > 0)].map((category) => {
+                          const categoryCount = category === 'All' 
+                            ? uploadedImages.length 
+                            : imagesByFolder[category]?.files.length || 0
+                          
+                          return (
+                            <button
+                              key={category}
+                              onClick={() => setSelectedGalleryCategory(category)}
+                              className={`px-2 py-1 text-xs rounded-full border transition-colors ${
+                                selectedGalleryCategory === category
+                                  ? 'bg-orange-500 text-white border-orange-600'
+                                  : 'bg-gray-100 text-gray-600 border-gray-300 hover:bg-gray-200'
+                              }`}
+                            >
+                              {category} ({categoryCount})
+                            </button>
+                          )
+                        })}
                       </div>
+
+                      {/* Images for Selected Category */}
+                      <div className="flex flex-wrap gap-2 items-start">
+                        {(() => {
+                          let displayImages = []
+                          let displayPreviews = []
+                          
+                          if (selectedGalleryCategory === 'All') {
+                            displayPreviews = imagePreviews
+                          } else {
+                            const categoryData = imagesByFolder[selectedGalleryCategory]
+                            if (categoryData) {
+                              displayPreviews = categoryData.previews
+                            }
+                          }
+                          
+                          return displayPreviews.slice(0, 8).map((preview, index) => (
+                            <div key={`${selectedGalleryCategory}-${index}`} className="relative flex-shrink-0">
+                              <img
+                                src={preview}
+                                alt={`${selectedGalleryCategory} ${index + 1}`}
+                                className="border object-contain"
+                                style={{
+                                  maxHeight: '80px',
+                                  minHeight: '40px',
+                                  width: 'auto',
+                                  maxWidth: '120px'
+                                }}
+                              />
+                              {index === 7 && displayPreviews.length > 8 && (
+                                <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center">
+                                  <span className="text-white text-xs font-bold">
+                                    +{displayPreviews.length - 8}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          ))
+                        })()}
+                      </div>
+                      
                       <p className="text-xs text-gray-500 mt-2">
-                        {uploadedImages.length} image{uploadedImages.length !== 1 ? 's' : ''} ready for your website
+                        {(() => {
+                          if (selectedGalleryCategory === 'All') {
+                            return `${uploadedImages.length} image${uploadedImages.length !== 1 ? 's' : ''} across all categories`
+                          } else {
+                            const categoryCount = imagesByFolder[selectedGalleryCategory]?.files.length || 0
+                            return `${categoryCount} image${categoryCount !== 1 ? 's' : ''} in ${selectedGalleryCategory} category`
+                          }
+                        })()}
                       </p>
                     </div>
                   </div>
