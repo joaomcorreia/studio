@@ -49,10 +49,12 @@ lerna-debug.log*
 # Next.js
 .next/
 out/
-build/
+dist/
+.build/
 
-# Production
-/build
+# Production build directories (but allow source build directories)
+**/node_modules/build/
+**/dist/
 
 # misc
 .DS_Store
