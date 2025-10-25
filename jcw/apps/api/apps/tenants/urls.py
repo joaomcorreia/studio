@@ -1,0 +1,10 @@
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    # For public schema (admin access)
+    path('', views.TenantListView.as_view(), name='tenant_list'),
+    path('<uuid:pk>/', views.TenantDetailView.as_view(), name='tenant_detail'),
+    # For tenant schema (user access)
+    path('info/', views.TenantInfoView.as_view(), name='tenant_info'),
+]
