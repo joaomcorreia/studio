@@ -26,17 +26,48 @@ class Template(models.Model):
     ]
     website_type = models.CharField(max_length=20, choices=WEBSITE_TYPE_CHOICES)
     
+    # Industry category for template classification
+    CATEGORY_CHOICES = [
+        ('rest', 'Restaurant'),
+        ('business', 'Business'),
+        ('autorepair', 'Auto Repair'),
+        ('portfolio', 'Portfolio'),
+        ('ecommerce', 'E-commerce'),
+        ('blog', 'Blog'),
+        ('medical', 'Medical'),
+        ('fitness', 'Fitness'),
+    ]
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, blank=True)
+    
+    # File naming and image storage
+    file_name = models.CharField(max_length=100, blank=True)  # e.g., jcw-rest-02
+    preview_image = models.ImageField(upload_to='templates/images/', blank=True, null=True)
+    
+    # Generated HTML and CSS content
+    html_content = models.TextField(blank=True)
+    css_content = models.TextField(blank=True)
+    
+    # Usage statistics
+    used_by_count = models.IntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+    
     # Default template per type
     is_default = models.BooleanField(default=False)
     
     # Audit
-    created_by = models.ForeignKey('users.User', on_delete=models.CASCADE)
+    created_by = models.ForeignKey('users.User', on_delete=models.CASCADE, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
-        unique_together = [['website_type', 'is_default']]  # Only one default per type
         ordering = ['website_type', 'name']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['website_type'],
+                condition=models.Q(is_default=True),
+                name='unique_default_per_website_type'
+            )
+        ]
     
     def __str__(self):
         return f"{self.name} ({self.website_type})"
@@ -45,6 +76,16 @@ class Template(models.Model):
         # Ensure only one default per website type
         if self.is_default:
             Template.objects.filter(website_type=self.website_type, is_default=True).update(is_default=False)
+            
+        # Auto-generate file name if category is set and file_name is empty
+        if self.category and not self.file_name:
+            category_prefix = f"jcw-{self.category}"
+            existing_count = Template.objects.filter(
+                category=self.category,
+                file_name__startswith=category_prefix
+            ).count()
+            self.file_name = f"{category_prefix}-{existing_count + 1:02d}"
+            
         super().save(*args, **kwargs)
 
 
