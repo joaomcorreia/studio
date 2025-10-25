@@ -42,3 +42,17 @@ class TenantInfoView(generics.RetrieveAPIView):
         # For now, return the first tenant (in simple mode)
         # In full tenancy mode, this would get the current tenant from the request
         return Tenant.objects.first()
+
+
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])  # Public endpoint for frontend
+def get_tenant_by_slug(request, slug):
+    """
+    Get tenant information by slug (public endpoint for frontend routing).
+    """
+    try:
+        tenant = Tenant.objects.get(slug=slug, is_active=True)
+        serializer = TenantSerializer(tenant)
+        return Response(serializer.data)
+    except Tenant.DoesNotExist:
+        return Response({'error': 'Tenant not found'}, status=404)

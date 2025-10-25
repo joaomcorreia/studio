@@ -10,13 +10,13 @@ class DomainSerializer(serializers.ModelSerializer):
 
 class TenantSerializer(serializers.ModelSerializer):
     domains = DomainSerializer(many=True, read_only=True)
-    dev_subdomain_url = serializers.ReadOnlyField()
+    dev_url = serializers.ReadOnlyField()
     
     class Meta:
         model = Tenant
         fields = [
             'id', 'slug', 'business_name', 'industry_category', 'city', 'country',
-            'contact_email', 'contact_phone', 'status', 'dev_subdomain_url',
+            'contact_email', 'contact_phone', 'is_active', 'dev_url',
             'domains', 'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']

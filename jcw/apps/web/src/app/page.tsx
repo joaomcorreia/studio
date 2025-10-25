@@ -1,4 +1,33 @@
+'use client'
+
+import { useEffect } from 'react'
+import TenantSitePage from './tenant/page'
+
 export default function HomePage() {
+  // Check if this is a tenant subdomain request
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const hostname = window.location.hostname
+      
+      // If it's a subdomain (not localhost:3000 or 127.0.0.1:3000)
+      if (hostname.includes('.lvh.me') && !hostname.startsWith('www.')) {
+        // This is handled by the TenantSitePage component below
+        return
+      }
+    }
+  }, [])
+
+  // Check if this is a tenant request
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname
+    const urlParams = new URLSearchParams(window.location.search)
+    const tenantParam = urlParams.get('tenant')
+    
+    if ((hostname.includes('.lvh.me') && !hostname.startsWith('www.')) || tenantParam) {
+      return <TenantSitePage />
+    }
+  }
+
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb' }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '48px 16px' }}>

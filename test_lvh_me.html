@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>LVH.ME Test</title>
+</head>
+<body>
+    <h1>Testing .lvh.me Domain Resolution</h1>
+    
+    <div id="test-results"></div>
+    
+    <script>
+        function runTests() {
+            const results = document.getElementById('test-results');
+            
+            results.innerHTML = `
+                <h2>🔍 Domain Resolution Test</h2>
+                <p><strong>Current hostname:</strong> ${window.location.hostname}</p>
+                <p><strong>Current port:</strong> ${window.location.port}</p>
+                <p><strong>Full URL:</strong> ${window.location.href}</p>
+                
+                <h3>📋 Instructions to test .lvh.me:</h3>
+                <ol>
+                    <li><strong>Start Next.js:</strong> <code>cd jcw/apps/web && npm run dev</code></li>
+                    <li><strong>Start Django:</strong> <code>cd jcw/apps/api && python manage.py runserver</code></li>
+                    <li><strong>Try these URLs:</strong></li>
+                    <ul>
+                        <li><a href="http://marys-restaurant.lvh.me:3000" target="_blank">http://marys-restaurant.lvh.me:3000</a></li>
+                        <li><a href="http://techflow-solutions.lvh.me:3000" target="_blank">http://techflow-solutions.lvh.me:3000</a></li>
+                        <li><a href="http://fresh-garden-cafe.lvh.me:3000" target="_blank">http://fresh-garden-cafe.lvh.me:3000</a></li>
+                    </ul>
+                </ol>
+                
+                <h3>🔧 Alternative: Use localhost with query params</h3>
+                <p>If .lvh.me doesn't work, you can test with:</p>
+                <ul>
+                    <li><a href="http://localhost:3000?tenant=marys-restaurant">http://localhost:3000?tenant=marys-restaurant</a></li>
+                    <li><a href="http://localhost:3000?tenant=techflow-solutions">http://localhost:3000?tenant=techflow-solutions</a></li>
+                </ul>
+            `;
+        }
+        
+        runTests();
+    </script>
+</body>
+</html>

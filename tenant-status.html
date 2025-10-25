@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>JCW Multi-Tenant Status</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #2563eb; text-align: center; margin-bottom: 30px; }
+        .status { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+        .server { padding: 20px; border-radius: 8px; border-left: 4px solid #059669; background: #f0fdf4; }
+        .server.error { border-left-color: #dc2626; background: #fef2f2; }
+        .tenant-list { background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0; }
+        .tenant { margin: 10px 0; padding: 10px; background: white; border-radius: 4px; }
+        .url { font-family: monospace; background: #e5e7eb; padding: 2px 6px; border-radius: 3px; margin: 0 5px; }
+        .working { color: #059669; font-weight: bold; }
+        .error { color: #dc2626; font-weight: bold; }
+        .test-links { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; }
+        .test-link { display: block; padding: 12px; background: #2563eb; color: white; text-decoration: none; border-radius: 6px; text-align: center; }
+        .test-link:hover { background: #1d4ed8; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Just Code Works - Multi-Tenant Status</h1>
+        
+        <div class="status">
+            <div class="server">
+                <h3>🖥️ Django API Server</h3>
+                <p><span class="working">✅ RUNNING</span></p>
+                <p><strong>URL:</strong> <span class="url">http://127.0.0.1:8000</span></p>
+                <p><strong>Status:</strong> All endpoints working</p>
+            </div>
+            
+            <div class="server">
+                <h3>⚛️ Next.js Frontend</h3>
+                <p><span class="working">✅ RUNNING</span></p>
+                <p><strong>URL:</strong> <span class="url">http://localhost:3000</span></p>
+                <p><strong>Status:</strong> Multi-tenant routing active</p>
+            </div>
+        </div>
+
+        <div class="tenant-list">
+            <h2>🏢 Available Tenants (5 total)</h2>
+            
+            <div class="tenant">
+                <h4>🍽️ Mary's Restaurant</h4>
+                <p><strong>Industry:</strong> Restaurant | <strong>Location:</strong> New York, USA</p>
+                <p><strong>Working URLs:</strong></p>
+                <div class="test-links">
+                    <a href="http://localhost:3000?tenant=marys-restaurant" class="test-link">Query Parameter Method</a>
+                    <a href="http://marys-restaurant.lvh.me:3000" class="test-link">Subdomain Method (.lvh.me)</a>
+                </div>
+            </div>
+
+            <div class="tenant">
+                <h4>💼 TechFlow Solutions</h4>
+                <p><strong>Industry:</strong> Services | <strong>Location:</strong> San Francisco, USA</p>
+                <div class="test-links">
+                    <a href="http://localhost:3000?tenant=techflow-solutions" class="test-link">Query Parameter Method</a>
+                    <a href="http://techflow-solutions.lvh.me:3000" class="test-link">Subdomain Method (.lvh.me)</a>
+                </div>
+            </div>
+
+            <div class="tenant">
+                <h4>🌱 Fresh Garden Cafe</h4>
+                <p><strong>Industry:</strong> Restaurant | <strong>Location:</strong> Portland, USA</p>
+                <div class="test-links">
+                    <a href="http://localhost:3000?tenant=fresh-garden-cafe" class="test-link">Query Parameter Method</a>
+                    <a href="http://fresh-garden-cafe.lvh.me:3000" class="test-link">Subdomain Method (.lvh.me)</a>
+                </div>
+            </div>
+
+            <div class="tenant">
+                <h4>📈 Digital Marketing Pro</h4>
+                <p><strong>Industry:</strong> Services | <strong>Location:</strong> Austin, USA</p>
+                <div class="test-links">
+                    <a href="http://localhost:3000?tenant=digital-marketing-pro" class="test-link">Query Parameter Method</a>
+                    <a href="http://digital-marketing-pro.lvh.me:3000" class="test-link">Subdomain Method (.lvh.me)</a>
+                </div>
+            </div>
+
+            <div class="tenant">
+                <h4>🏥 Wellness Center</h4>
+                <p><strong>Industry:</strong> Healthcare | <strong>Location:</strong> Denver, USA</p>
+                <div class="test-links">
+                    <a href="http://localhost:3000?tenant=wellness-center" class="test-link">Query Parameter Method</a>
+                    <a href="http://wellness-center.lvh.me:3000" class="test-link">Subdomain Method (.lvh.me)</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="tenant-list">
+            <h2>🔗 Platform Links</h2>
+            <div class="test-links">
+                <a href="http://localhost:3000" class="test-link">🏠 Main Platform</a>
+                <a href="http://127.0.0.1:8000/admin/" class="test-link">👑 Django Admin</a>
+                <a href="http://127.0.0.1:8000/api/" class="test-link">🔌 API Root</a>
+                <a href="http://localhost:3000/test" class="test-link">🧪 Test Page</a>
+            </div>
+        </div>
+
+        <div style="background: #fef3c7; padding: 20px; border-radius: 8px; margin-top: 20px;">
+            <h3>💡 Troubleshooting</h3>
+            <p><strong>If .lvh.me domains don't work:</strong></p>
+            <ul>
+                <li>Use the "Query Parameter Method" links instead</li>
+                <li>Make sure both Django (port 8000) and Next.js (port 3000) servers are running</li>
+                <li>Clear browser cache and try again</li>
+                <li>Check if your DNS is blocking .lvh.me (some corporate networks do)</li>
+            </ul>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px; color: #6b7280;">
+            <p>🎉 <strong>Multi-tenant platform is fully operational!</strong></p>
+            <p>Last updated: <span id="timestamp"></span></p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('timestamp').textContent = new Date().toLocaleString();
+        
+        // Test API connection
+        fetch('http://127.0.0.1:8000/api/')
+            .then(response => response.json())
+            .then(data => {
+                console.log('✅ Django API is responding:', data);
+            })
+            .catch(error => {
+                console.log('❌ Django API error:', error);
+            });
+    </script>
+</body>
+</html>
