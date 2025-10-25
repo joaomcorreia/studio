@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { templateService, Template, TemplateStats } from '@/services/templateService'
 import TemplateUploadModal from '@/components/admin/TemplateUploadModal'
+import TemplateEditModal from '@/components/admin/TemplateEditModal'
+import TemplateDeleteModal from '@/components/admin/TemplateDeleteModal'
 
 export default function TemplatesPage() {
   const [templates, setTemplates] = useState<Template[]>([])
@@ -11,18 +13,26 @@ export default function TemplatesPage() {
   const [error, setError] = useState<string | null>(null)
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null)
   const [showUploadModal, setShowUploadModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [editingTemplate, setEditingTemplate] = useState<Template | null>(null)
+  const [deletingTemplate, setDeletingTemplate] = useState<Template | null>(null)
+  const [categories, setCategories] = useState<{ value: string; label: string }[]>([])
+  const [actionLoading, setActionLoading] = useState<string | null>(null)
 
   // Load templates and stats from API
   useEffect(() => {
     const loadData = async () => {
       try {
         setLoading(true)
-        const [templatesData, statsData] = await Promise.all([
+        const [templatesData, statsData, categoriesData] = await Promise.all([
           templateService.getTemplates(),
-          templateService.getStats()
+          templateService.getStats(),
+          templateService.getCategories()
         ])
         setTemplates(templatesData)
         setStats(statsData)
+        setCategories(categoriesData)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load templates')
       } finally {
@@ -59,6 +69,102 @@ export default function TemplatesPage() {
       setStats(updatedStats)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to upload template')
+    }
+  }
+
+  // Handle template edit
+  const handleEdit = (template: Template) => {
+    setEditingTemplate(template)
+    setShowEditModal(true)
+  }
+
+  // Handle template update
+  const handleUpdate = async (updatedTemplate: Template) => {
+    try {
+      const updated = await templateService.updateTemplate(updatedTemplate.id, {
+        name: updatedTemplate.name,
+        category: updatedTemplate.category,
+        description: updatedTemplate.description,
+        is_active: updatedTemplate.is_active
+      })
+      
+      setTemplates(prev => 
+        prev.map(template => 
+          template.id === updated.id ? updated : template
+        )
+      )
+      
+      // Update selected template if it's currently being viewed
+      if (selectedTemplate && selectedTemplate.id === updated.id) {
+        setSelectedTemplate(updated)
+      }
+      
+      setShowEditModal(false)
+      setEditingTemplate(null)
+      
+      // Refresh stats
+      const updatedStats = await templateService.getStats()
+      setStats(updatedStats)
+      
+      return updated
+    } catch (err) {
+      throw new Error(err instanceof Error ? err.message : 'Failed to update template')
+    }
+  }
+
+  // Handle template delete
+  const handleDelete = (template: Template) => {
+    setDeletingTemplate(template)
+    setShowDeleteModal(true)
+  }
+
+  // Handle template delete confirmation
+  const handleDeleteConfirm = async (templateId: string) => {
+    try {
+      await templateService.deleteTemplate(templateId)
+      
+      setTemplates(prev => prev.filter(template => template.id !== templateId))
+      
+      // Close template code view if deleted template was selected
+      if (selectedTemplate && selectedTemplate.id === templateId) {
+        setSelectedTemplate(null)
+      }
+      
+      setShowDeleteModal(false)
+      setDeletingTemplate(null)
+      
+      // Refresh stats
+      const updatedStats = await templateService.getStats()
+      setStats(updatedStats)
+    } catch (err) {
+      throw new Error(err instanceof Error ? err.message : 'Failed to delete template')
+    }
+  }
+
+  // Handle template status toggle
+  const handleToggleStatus = async (template: Template) => {
+    try {
+      setActionLoading(template.id)
+      const updated = await templateService.toggleTemplateStatus(template.id)
+      
+      setTemplates(prev => 
+        prev.map(t => 
+          t.id === updated.id ? updated : t
+        )
+      )
+      
+      // Update selected template if it's currently being viewed
+      if (selectedTemplate && selectedTemplate.id === updated.id) {
+        setSelectedTemplate(updated)
+      }
+      
+      // Refresh stats
+      const updatedStats = await templateService.getStats()
+      setStats(updatedStats)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to toggle template status')
+    } finally {
+      setActionLoading(null)
     }
   }
 
@@ -254,7 +360,25 @@ export default function TemplatesPage() {
                     >
                       View Code
                     </button>
-                    <button className="text-gray-600 hover:text-gray-900 text-sm">Preview</button>
+                    <button 
+                      onClick={() => handleEdit(template)}
+                      className="text-green-600 hover:text-green-900 text-sm"
+                    >
+                      Edit
+                    </button>
+                    <button 
+                      onClick={() => handleToggleStatus(template)}
+                      disabled={actionLoading === template.id}
+                      className="text-purple-600 hover:text-purple-900 text-sm disabled:opacity-50"
+                    >
+                      {actionLoading === template.id ? '...' : (template.is_active ? 'Deactivate' : 'Activate')}
+                    </button>
+                    <button 
+                      onClick={() => handleDelete(template)}
+                      className="text-red-600 hover:text-red-900 text-sm"
+                    >
+                      Delete
+                    </button>
                   </div>
                 </div>
               </div>
@@ -351,6 +475,29 @@ export default function TemplatesPage() {
         isOpen={showUploadModal}
         onClose={() => setShowUploadModal(false)}
         onUpload={handleUpload}
+      />
+
+      {/* Edit Modal */}
+      <TemplateEditModal
+        template={editingTemplate}
+        isOpen={showEditModal}
+        onClose={() => {
+          setShowEditModal(false)
+          setEditingTemplate(null)
+        }}
+        onSave={handleUpdate}
+        categories={categories}
+      />
+
+      {/* Delete Modal */}
+      <TemplateDeleteModal
+        template={deletingTemplate}
+        isOpen={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false)
+          setDeletingTemplate(null)
+        }}
+        onConfirm={handleDeleteConfirm}
       />
     </div>
   )

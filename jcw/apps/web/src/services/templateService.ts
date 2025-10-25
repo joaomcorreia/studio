@@ -1,10 +1,11 @@
-const API_BASE_URL = 'http://localhost:8000/api'
+const API_BASE_URL = 'http://127.0.0.1:8000/api'
 
 export interface Template {
   id: string
   name: string
   category: string
   description: string
+  website_type: string
   file_name: string
   preview_image: string | null
   preview_image_url: string | null
@@ -104,6 +105,13 @@ class TemplateService {
 
   async getCategories(): Promise<Category[]> {
     return this.makeRequest('/templates/categories/')
+  }
+
+  async updateTemplate(id: string, data: Partial<Template>): Promise<Template> {
+    return this.makeRequest(`/templates/${id}/`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    })
   }
 
   async getStats(): Promise<TemplateStats> {

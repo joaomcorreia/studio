@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, FormEvent, ChangeEvent } from 'react'
+import { useState, FormEvent, ChangeEvent, useEffect } from 'react'
 import MagicAI from '../../lib/magicAI'
 
 // Common services by industry
@@ -72,6 +72,36 @@ export default function BuildPage() {
   const [showServicesSection, setShowServicesSection] = useState(false)
   const [showContentSection, setShowContentSection] = useState(false)
   const [showImageSection, setShowImageSection] = useState(false)
+  const [showLogoSection, setShowLogoSection] = useState(false)
+  const [logoChoice, setLogoChoice] = useState<'upload' | 'generate' | null>(null)
+  const [uploadedLogo, setUploadedLogo] = useState<File | null>(null)
+  const [logoPreview, setLogoPreview] = useState<string>('')
+  const [generatedLogoUrl, setGeneratedLogoUrl] = useState<string>('')
+  const [isGeneratingLogo, setIsGeneratingLogo] = useState(false)
+  const [showTemplateSection, setShowTemplateSection] = useState(false)
+  const [templates, setTemplates] = useState<any[]>([])
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
+  const [selectedTemplateData, setSelectedTemplateData] = useState<any | null>(null)
+  const [isLoadingTemplates, setIsLoadingTemplates] = useState(false)
+
+  // Show logo section when a logo choice is made
+  useEffect(() => {
+    if (logoChoice && !showLogoSection) {
+      const timer = setTimeout(() => setShowLogoSection(true), 100)
+      return () => clearTimeout(timer)
+    }
+  }, [logoChoice, showLogoSection])
+
+  // Show template section after logo is completed (uploaded or generated)
+  useEffect(() => {
+    if ((uploadedLogo || generatedLogoUrl) && !showTemplateSection) {
+      const timer = setTimeout(() => {
+        setShowTemplateSection(true)
+        loadTemplates()
+      }, 500)
+      return () => clearTimeout(timer)
+    }
+  }, [uploadedLogo, generatedLogoUrl, showTemplateSection])
 
   const checkSlug = async (business_name: string) => {
     if (!business_name) return
@@ -119,7 +149,13 @@ export default function BuildPage() {
               folder, 
               { count: data.files.length }
             ])
-          )
+          ),
+          logo_info: {
+            choice: logoChoice,
+            uploaded: uploadedLogo ? true : false,
+            generated: generatedLogoUrl ? true : false
+          },
+          selected_template: selectedTemplate
         })
       })
       
@@ -515,6 +551,105 @@ export default function BuildPage() {
     setDevUrl(previewUrl)
   }
 
+  // Logo handling functions
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validate file
+    if (!file.type.startsWith('image/')) {
+      alert('Please select a valid image file')
+      return
+    }
+
+    if (file.size > 2 * 1024 * 1024) { // 2MB limit
+      alert('Logo file size must be less than 2MB')
+      return
+    }
+
+    // Create preview
+    const preview = URL.createObjectURL(file)
+    setUploadedLogo(file)
+    setLogoPreview(preview)
+    setShowLogoSection(true)
+  }
+
+  const removeLogo = () => {
+    if (logoPreview) {
+      URL.revokeObjectURL(logoPreview)
+    }
+    setUploadedLogo(null)
+    setLogoPreview('')
+  }
+
+  const generateLogo = async () => {
+    if (!formData.business_name || !formData.industry_category) {
+      alert('Please complete business name and category first')
+      return
+    }
+
+    setIsGeneratingLogo(true)
+    
+    try {
+      // Placeholder for Freepik API integration
+      // This will be replaced with actual Freepik API call later
+      
+      // Simulated API call delay
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      
+      // Generate a placeholder logo URL (in real implementation, this would come from Freepik API)
+      // Using a different placeholder service that works better
+      const businessInitials = formData.business_name.slice(0, 3).toUpperCase()
+      const mockLogoUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(businessInitials)}&size=200&background=4F46E5&color=FFFFFF&bold=true&format=png`
+      
+      setGeneratedLogoUrl(mockLogoUrl)
+      setShowLogoSection(true)
+      
+      // TODO: Replace with actual Freepik API integration
+      console.log('Generating logo for:', {
+        business_name: formData.business_name,
+        category: formData.industry_category,
+        // Additional parameters for Freepik API:
+        // - style: 'modern', 'classic', 'minimalist', etc.
+        // - colors: based on industry category
+        // - elements: industry-specific icons/symbols
+      })
+      
+    } catch (error) {
+      console.error('Logo generation failed:', error)
+      alert('Failed to generate logo. Please try again.')
+    } finally {
+      setIsGeneratingLogo(false)
+    }
+  }
+
+  // Load available templates from API
+  const loadTemplates = async () => {
+    if (templates.length > 0) return // Already loaded
+    
+    setIsLoadingTemplates(true)
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api'}/templates/`)
+      if (response.ok) {
+        const data = await response.json()
+        setTemplates(data)
+      } else {
+        console.error('Failed to load templates')
+      }
+    } catch (error) {
+      console.error('Error loading templates:', error)
+    } finally {
+      setIsLoadingTemplates(false)
+    }
+  }
+
+  // Handle template selection and update preview
+  const handleTemplateSelection = (templateId: string) => {
+    setSelectedTemplate(templateId)
+    const templateData = templates.find(t => t.id === templateId)
+    setSelectedTemplateData(templateData)
+  }
+
   if (result?.success) {
     return (
       <div className="max-w-2xl mx-auto py-12 px-4">
@@ -581,16 +716,18 @@ export default function BuildPage() {
                   <div 
                     className="bg-blue-600 h-2 rounded-full transition-all duration-500"
                     style={{
-                      width: showImageSection ? '100%' : showServicesSection ? '80%' : showContentSection ? '60%' : showWebsiteSection ? '40%' : '20%'
+                      width: showTemplateSection ? '100%' : showLogoSection ? '85%' : showImageSection ? '70%' : showServicesSection ? '57%' : showContentSection ? '43%' : showWebsiteSection ? '28%' : '14%'
                     }}
                   ></div>
                 </div>
                 <div className="flex justify-between text-xs text-gray-500 mt-1">
-                  <span className={showWebsiteSection || showContentSection || showServicesSection || showImageSection ? 'text-blue-600 font-medium' : ''}>Business Info</span>
-                  <span className={showWebsiteSection ? (showContentSection || showServicesSection || showImageSection ? 'text-blue-600 font-medium' : 'text-gray-700') : ''}>Website Details</span>
-                  <span className={showContentSection ? (showServicesSection || showImageSection ? 'text-blue-600 font-medium' : 'text-gray-700') : ''}>Content</span>
-                  <span className={showServicesSection ? (showImageSection ? 'text-blue-600 font-medium' : 'text-gray-700') : ''}>AI Services</span>
-                  <span className={showImageSection ? 'text-blue-600 font-medium' : ''}>Images</span>
+                  <span className={showWebsiteSection || showContentSection || showServicesSection || showImageSection || showLogoSection || showTemplateSection ? 'text-blue-600 font-medium' : ''}>Business</span>
+                  <span className={showWebsiteSection ? (showContentSection || showServicesSection || showImageSection || showLogoSection || showTemplateSection ? 'text-blue-600 font-medium' : 'text-gray-700') : ''}>Website</span>
+                  <span className={showContentSection ? (showServicesSection || showImageSection || showLogoSection || showTemplateSection ? 'text-blue-600 font-medium' : 'text-gray-700') : ''}>Content</span>
+                  <span className={showServicesSection ? (showImageSection || showLogoSection || showTemplateSection ? 'text-blue-600 font-medium' : 'text-gray-700') : ''}>Services</span>
+                  <span className={showImageSection ? (showLogoSection || showTemplateSection ? 'text-blue-600 font-medium' : 'text-gray-700') : ''}>Images</span>
+                  <span className={showLogoSection ? (showTemplateSection ? 'text-blue-600 font-medium' : 'text-gray-700') : ''}>Logo</span>
+                  <span className={showTemplateSection ? 'text-blue-600 font-medium' : ''}>Template</span>
                 </div>
               </div>
 
@@ -1272,22 +1409,317 @@ export default function BuildPage() {
                 </div>
               )}
 
+              {/* Logo Section - appears after images section */}
+              {showImageSection && (
+                <div className="bg-white border border-gray-300 rounded-lg p-6 mb-6 animate-fadeIn">
+                  <div className="flex items-center mb-4">
+                    <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center mr-3">
+                      <span className="text-orange-600 text-lg">🎨</span>
+                    </div>
+                    <h2 className="text-xl font-semibold text-gray-900">Your Business Logo</h2>
+                  </div>
+                  
+                  <p className="text-gray-600 mb-6">
+                    Do you have your own logo or would you like us to create a new one?
+                  </p>
+
+                  <div className="grid md:grid-cols-2 gap-4 mb-6">
+                    {/* Upload Logo Option */}
+                    <div 
+                      className={`border-2 rounded-lg p-6 cursor-pointer transition-all ${
+                        logoChoice === 'upload' 
+                          ? 'border-blue-500 bg-blue-50' 
+                          : 'border-gray-300 hover:border-gray-400'
+                      }`}
+                      onClick={() => setLogoChoice('upload')}
+                    >
+                      <div className="text-center">
+                        <div className="text-3xl mb-3">📁</div>
+                        <h3 className="font-medium text-gray-900 mb-2">Upload My Logo</h3>
+                        <p className="text-sm text-gray-600">
+                          I have my own logo file ready to upload
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Generate Logo Option */}
+                    <div 
+                      className={`border-2 rounded-lg p-6 cursor-pointer transition-all ${
+                        logoChoice === 'generate' 
+                          ? 'border-purple-500 bg-purple-50' 
+                          : 'border-gray-300 hover:border-gray-400'
+                      }`}
+                      onClick={() => setLogoChoice('generate')}
+                    >
+                      <div className="text-center">
+                        <div className="text-3xl mb-3">✨</div>
+                        <h3 className="font-medium text-gray-900 mb-2">Generate New Logo</h3>
+                        <p className="text-sm text-gray-600">
+                          Create a professional logo based on my business
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Upload Interface */}
+                  {logoChoice === 'upload' && (
+                    <div className="bg-blue-50 rounded-lg p-6 border border-blue-200">
+                      <h4 className="font-medium text-blue-900 mb-4">Upload Your Logo</h4>
+                      
+                      {!uploadedLogo ? (
+                        <div className="border-2 border-dashed border-blue-300 rounded-lg p-8 text-center">
+                          <div className="text-4xl mb-4">🖼️</div>
+                          <p className="text-blue-700 mb-4">
+                            Drop your logo file here or click to browse
+                          </p>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleLogoUpload}
+                            className="hidden"
+                            id="logo-upload"
+                          />
+                          <label
+                            htmlFor="logo-upload"
+                            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer transition-colors"
+                          >
+                            <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                            Choose File
+                          </label>
+                          <p className="text-xs text-blue-600 mt-2">
+                            PNG, JPG, SVG • Max 2MB • Recommended: 500x500px
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="bg-white rounded-lg border border-blue-200 p-4">
+                          <div className="flex items-center space-x-4">
+                            <img 
+                              src={logoPreview} 
+                              alt="Logo preview" 
+                              className="w-16 h-16 object-contain border border-gray-200 rounded"
+                            />
+                            <div className="flex-1">
+                              <p className="font-medium text-gray-900">{uploadedLogo.name}</p>
+                              <p className="text-sm text-gray-600">
+                                {(uploadedLogo.size / 1024).toFixed(1)} KB
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={removeLogo}
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Generate Interface */}
+                  {logoChoice === 'generate' && (
+                    <div className="bg-purple-50 rounded-lg p-6 border border-purple-200">
+                      <h4 className="font-medium text-purple-900 mb-4">Generate Professional Logo</h4>
+                      
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-purple-700 mb-2">
+                            Business Category
+                          </label>
+                          <p className="text-sm text-purple-600 bg-purple-100 px-3 py-2 rounded">
+                            {formData.industry_category || 'Not specified'}
+                          </p>
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium text-purple-700 mb-2">
+                            Business Name
+                          </label>
+                          <p className="text-sm text-purple-600 bg-purple-100 px-3 py-2 rounded">
+                            {formData.business_name || 'Your Business Name'}
+                          </p>
+                        </div>
+
+                        {!generatedLogoUrl ? (
+                          <button
+                            type="button"
+                            onClick={generateLogo}
+                            disabled={isGeneratingLogo || !formData.business_name || !formData.industry_category}
+                            className="w-full bg-purple-600 text-white py-3 rounded-lg font-medium hover:bg-purple-700 disabled:opacity-50 transition-colors"
+                          >
+                            {isGeneratingLogo ? (
+                              <span className="flex items-center justify-center">
+                                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Generating Logo...
+                              </span>
+                            ) : '✨ Generate Logo with AI'}
+                          </button>
+                        ) : (
+                          <div className="bg-white rounded-lg border border-purple-200 p-4">
+                            <div className="flex items-center space-x-4">
+                              <img 
+                                src={generatedLogoUrl} 
+                                alt="Generated logo" 
+                                className="w-16 h-16 object-contain border border-gray-200 rounded"
+                              />
+                              <div className="flex-1">
+                                <p className="font-medium text-gray-900">AI Generated Logo</p>
+                                <p className="text-sm text-gray-600">
+                                  Based on {formData.industry_category} business
+                                </p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => setGeneratedLogoUrl('')}
+                                className="text-purple-600 hover:text-purple-700 text-sm"
+                              >
+                                Generate Another
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {!formData.business_name || !formData.industry_category ? (
+                          <p className="text-sm text-amber-600">
+                            ⚠️ Please complete business name and category to generate logo
+                          </p>
+                        ) : null}
+                      </div>
+                    </div>
+                  )}
+
+
+                </div>
+              )}
+
+              {/* Template Selection Section - appears after logo completion */}
+              {showTemplateSection && (
+                <div className="bg-indigo-50 rounded-lg p-6 mb-6 border-l-4 border-indigo-500 animate-fadeIn">
+                  <h2 className="text-xl font-semibold mb-6 text-gray-900">Choose Your Website Template</h2>
+                  <p className="text-sm text-gray-600 mb-6">
+                    🎨 Select a professional template that matches your business style. You can customize colors, content, and layout later.
+                  </p>
+                  
+                  {isLoadingTemplates ? (
+                    <div className="flex items-center justify-center py-12">
+                      <svg className="animate-spin h-8 w-8 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 714 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      <span className="ml-3 text-gray-600">Loading templates...</span>
+                    </div>
+                  ) : templates.length > 0 ? (
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {templates.map((template) => (
+                        <div
+                          key={template.id}
+                          onClick={() => handleTemplateSelection(template.id)}
+                          className={`border-2 rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-lg ${
+                            selectedTemplate === template.id
+                              ? 'border-indigo-500 bg-indigo-50 shadow-lg'
+                              : 'border-gray-200 bg-white hover:border-indigo-300'
+                          }`}
+                        >
+                          {/* Template Preview Image */}
+                          <div className="aspect-w-16 aspect-h-10 bg-gray-100 rounded-lg mb-4 overflow-hidden">
+                            {template.preview_image_url ? (
+                              <img
+                                src={template.preview_image_url}
+                                alt={template.name}
+                                className="w-full h-32 object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-32 bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center">
+                                <div className="text-center">
+                                  <div className="text-3xl mb-2">🎨</div>
+                                  <p className="text-sm text-gray-600">{template.name}</p>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                          
+                          {/* Template Info */}
+                          <div className="space-y-2">
+                            <h3 className="font-semibold text-gray-900 text-sm">{template.name}</h3>
+                            <p className="text-xs text-gray-600 line-clamp-2">
+                              {template.description || 'Professional template perfect for your business'}
+                            </p>
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full">
+                                {template.category?.toUpperCase() || 'GENERAL'}
+                              </span>
+                              {selectedTemplate === template.id && (
+                                <span className="text-indigo-600 font-semibold">✓ Selected</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <div className="text-4xl mb-4">📋</div>
+                      <p className="text-gray-600">No templates available at the moment.</p>
+                      <button
+                        type="button"
+                        onClick={loadTemplates}
+                        className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                      >
+                        Retry Loading Templates
+                      </button>
+                    </div>
+                  )}
+                  
+                  {selectedTemplate && (
+                    <div className="mt-6 p-4 bg-indigo-100 rounded-lg border border-indigo-200">
+                      <div className="flex items-start space-x-3">
+                        <div className="text-indigo-600 mt-1">
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-medium text-indigo-900 mb-1">Template Selected!</h4>
+                          <p className="text-sm text-indigo-700">
+                            {templates.find(t => t.id === selectedTemplate)?.name} will be used as your website foundation. 
+                            You can customize everything after creation.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <button
                 type="submit"
-                disabled={isLoading || !contentInfo.description}
+                disabled={isLoading || !contentInfo.description || !selectedTemplate}
                 className="w-full bg-primary-600 text-white py-3 rounded-lg font-medium hover:bg-primary-700 disabled:opacity-50 transition-all"
               >
                 {isLoading ? (
                   <span className="flex items-center justify-center">
                     <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 714 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
                     Creating Your Website...
                   </span>
-                ) : showImageSection ? 'Create My Website 🚀' : 'Complete All Steps First'}
+                ) : selectedTemplate ? 'Create My Website 🚀' : 'Complete All Steps First'}
               </button>
               
+              {!selectedTemplate && showTemplateSection && (
+                <p className="text-center text-sm text-amber-600 mt-2">
+                  ⚠️ Please select a template to create your website
+                </p>
+              )}
               {!contentInfo.description && showContentSection && (
                 <p className="text-center text-sm text-amber-600 mt-2">
                   ⚠️ Please complete the business description to see AI service suggestions
@@ -1311,217 +1743,271 @@ export default function BuildPage() {
                 </div>
                 <div className="bg-gray-700 rounded px-2 py-1 font-mono text-xs flex-1">
                   <span className="text-gray-400">🔒 </span>
-                  {websiteInfo.slug ? `justcodeworks.eu/build/${websiteInfo.slug}/` : 'justcodeworks.eu/build/your-website/'}
+                  {websiteInfo.custom_domain || (websiteInfo.slug ? `justcodeworks.eu/build/${websiteInfo.slug}/` : 'justcodeworks.eu/build/your-website/')}
                 </div>
               </div>
               
               {/* Website Content */}
-              <div className="p-4 bg-white min-h-80 relative">
-                <div className="border-b pb-3 mb-4">
-                  <h1 className="text-xl font-bold text-gray-800 transition-all duration-300">
-                    {websiteInfo.website_name || formData.business_name || 'Your Business Name'}
-                  </h1>
-                  <div className="flex space-x-4 mt-2 text-sm">
-                    <span className="text-blue-600 hover:underline cursor-pointer">Home</span>
-                    <span className="text-gray-600 hover:underline cursor-pointer">About</span>
-                    <span className="text-gray-600 hover:underline cursor-pointer">Contact</span>
-                  </div>
+              {selectedTemplateData && selectedTemplateData.html_content ? (
+                <div className="bg-white min-h-80 relative overflow-hidden">
+                  {/* Inject template CSS */}
+                  <style dangerouslySetInnerHTML={{
+                    __html: selectedTemplateData.css_content || ''
+                  }} />
+                  {/* Inject template HTML with user data */}
+                  <div 
+                    dangerouslySetInnerHTML={{ 
+                      __html: selectedTemplateData.html_content
+                        .replace(/{{BUSINESS_NAME}}/g, websiteInfo.website_name || formData.business_name || 'Your Business Name')
+                        .replace(/{{LOGO_URL}}/g, logoPreview || generatedLogoUrl || '')
+                        .replace(/{{KEY_MESSAGE}}/g, contentInfo.key_message || (formData.industry_category ? `Professional ${formData.industry_category} services` : 'Quality services you can trust'))
+                        .replace(/{{DESCRIPTION}}/g, contentInfo.description || '')
+                        .replace(/{{CITY}}/g, formData.city || '')
+                        .replace(/{{COUNTRY}}/g, formData.country || '')
+                        .replace(/{{CONTACT_EMAIL}}/g, formData.contact_email || '')
+                        .replace(/{{CONTACT_PHONE}}/g, formData.contact_phone || '')
+                        .replace(/{{CUSTOM_DOMAIN}}/g, websiteInfo.custom_domain || '')
+                        .replace(/{{SERVICES}}/g, services.selected.slice(0, 6).join(', '))
+                        .replace(/{{CALL_TO_ACTION}}/g, contentInfo.call_to_action ? contentInfo.call_to_action.charAt(0).toUpperCase() + contentInfo.call_to_action.slice(1).replace('_', ' ') : 'Get Started')
+                        // Remove the external CSS link since we're injecting CSS directly
+                        .replace(/<link\s+rel="stylesheet"\s+href="[^"]*"[^>]*>/gi, '')
+                        // Remove the DOCTYPE and html/head tags to avoid conflicts
+                        .replace(/<!DOCTYPE[^>]*>/gi, '')
+                        .replace(/<\/?html[^>]*>/gi, '')
+                        .replace(/<\/?head[^>]*>/gi, '')
+                        .replace(/<meta[^>]*>/gi, '')
+                        .replace(/<title[^>]*>.*?<\/title>/gi, '')
+                    }}
+                  />
                 </div>
-                
-                {/* Hero Section */}
-                <div className="text-center py-6 transition-all duration-300">
-                  <h2 className="text-lg font-semibold text-gray-800 mb-2">
-                    Welcome to {websiteInfo.website_name || formData.business_name || 'Your Business'}
-                  </h2>
-                  <p className="text-gray-600 text-sm mb-3">
-                    {contentInfo.key_message || (formData.industry_category ? 
-                      `Professional ${formData.industry_category} services` : 
-                      'Quality services you can trust')
-                    }
-                  </p>
-                  {formData.city && (
-                    <p className="text-gray-500 text-xs mb-3">
-                      📍 Located in {formData.city}{formData.country && `, ${formData.country}`}
+              ) : (
+                <div className="p-4 bg-white min-h-80 relative">
+                  <div className="border-b pb-3 mb-4">
+                    <div className="flex items-center space-x-3">
+                      {/* Logo Preview */}
+                      {(logoPreview || generatedLogoUrl) && (
+                        <img 
+                          src={logoPreview || generatedLogoUrl} 
+                          alt="Logo" 
+                          className="w-10 h-10 object-contain border border-gray-200 rounded"
+                        />
+                      )}
+                      <h1 className="text-xl font-bold text-gray-800 transition-all duration-300">
+                        {websiteInfo.website_name || formData.business_name || 'Your Business Name'}
+                      </h1>
+                    </div>
+                    <div className="flex space-x-4 mt-2 text-sm">
+                      <span className="text-blue-600 hover:underline cursor-pointer">Home</span>
+                      <span className="text-gray-600 hover:underline cursor-pointer">About</span>
+                      <span className="text-gray-600 hover:underline cursor-pointer">Contact</span>
+                    </div>
+                  </div>
+                  
+                  {/* Hero Section */}
+                  <div className="text-center py-6 transition-all duration-300">
+                    <h2 className="text-lg font-semibold text-gray-800 mb-2">
+                      Welcome to {websiteInfo.website_name || formData.business_name || 'Your Business'}
+                    </h2>
+                    <p className="text-gray-600 text-sm mb-3">
+                      {contentInfo.key_message || (formData.industry_category ? 
+                        `Professional ${formData.industry_category} services` : 
+                        'Quality services you can trust')
+                      }
                     </p>
-                  )}
-                  {contentInfo.call_to_action && (
-                    <button className="mt-3 px-4 py-2 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors">
-                      {contentInfo.call_to_action.charAt(0).toUpperCase() + contentInfo.call_to_action.slice(1).replace('_', ' ')} →
-                    </button>
-                  )}
-                </div>
-
-                {/* About Us Section - appears when business description exists */}
-                {contentInfo.description && (
-                  <div className="border-t pt-4 transition-all duration-500 animate-fadeIn">
-                    <h3 className="text-sm font-semibold text-gray-800 mb-3 text-left flex items-center">
-                      <span className="w-1 h-4 bg-blue-500 mr-2 rounded"></span>
-                      About Us
-                    </h3>
-                    <div className="text-left space-y-2 ml-3">
-                      <p className="text-xs text-gray-600 leading-relaxed">
-                        {contentInfo.description}
+                    {formData.city && (
+                      <p className="text-gray-500 text-xs mb-3">
+                        📍 Located in {formData.city}{formData.country && `, ${formData.country}`}
                       </p>
-                      {contentInfo.target_audience && (
-                        <div className="mt-3 p-2 bg-blue-50 rounded border-l-2 border-blue-300">
-                          <p className="text-xs text-gray-700">
-                            <strong className="text-blue-800">Perfect for:</strong> {contentInfo.target_audience}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Services Section - appears when services are selected */}
-                {services.selected.length > 0 && (
-                  <div className="border-t pt-4 mt-4 transition-all duration-500 animate-fadeIn">
-                    <h3 className="text-sm font-semibold text-gray-800 mb-3 text-left flex items-center">
-                      <span className="w-1 h-4 bg-green-500 mr-2 rounded"></span>
-                      Our Services
-                    </h3>
-                    <div className="grid grid-cols-1 gap-2 ml-3">
-                      {services.selected.slice(0, 6).map((service) => (
-                        <div key={service} className="flex items-center text-xs text-gray-600">
-                          <span className="text-green-500 mr-2 text-sm">✓</span>
-                          {service}
-                        </div>
-                      ))}
-                      {services.selected.length > 6 && (
-                        <div className="text-xs text-gray-500 italic mt-1 ml-4">
-                          +{services.selected.length - 6} more services available
-                        </div>
-                      )}
-                    </div>
-                    {services.custom && (
-                      <div className="mt-3 ml-3 p-2 bg-green-50 rounded text-xs text-gray-700 border-l-2 border-green-300">
-                        <strong className="text-green-800">Specialty Services:</strong><br />
-                        {services.custom.substring(0, 80)}{services.custom.length > 80 ? '...' : ''}
-                      </div>
+                    )}
+                    {contentInfo.call_to_action && (
+                      <button className="mt-3 px-4 py-2 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors">
+                        {contentInfo.call_to_action.charAt(0).toUpperCase() + contentInfo.call_to_action.slice(1).replace('_', ' ')} →
+                      </button>
                     )}
                   </div>
-                )}
 
-                {/* Gallery Section - appears when images are uploaded */}
-                {uploadedImages.length > 0 && (
-                  <div className="border-t pt-4 mt-4 transition-all duration-500 animate-fadeIn">
-                    <h3 className="text-sm font-semibold text-gray-800 mb-3 text-left flex items-center">
-                      <span className="w-1 h-4 bg-orange-500 mr-2 rounded"></span>
-                      Gallery
-                    </h3>
-                    <div className="ml-3">
-                      {/* Category Filters */}
-                      <div className="mb-3 flex flex-wrap gap-1">
-                        {['All', ...folders.filter(f => imagesByFolder[f]?.files.length > 0)].map((category) => {
-                          const categoryCount = category === 'All' 
-                            ? uploadedImages.length 
-                            : imagesByFolder[category]?.files.length || 0
-                          
-                          return (
-                            <button
-                              key={category}
-                              onClick={() => setSelectedGalleryCategory(category)}
-                              className={`px-2 py-1 text-xs rounded-full border transition-colors ${
-                                selectedGalleryCategory === category
-                                  ? 'bg-orange-500 text-white border-orange-600'
-                                  : 'bg-gray-100 text-gray-600 border-gray-300 hover:bg-gray-200'
-                              }`}
-                            >
-                              {category} ({categoryCount})
-                            </button>
-                          )
-                        })}
+                  {/* About Us Section - appears when business description exists */}
+                  {contentInfo.description && (
+                    <div className="border-t pt-4 transition-all duration-500 animate-fadeIn">
+                      <h3 className="text-sm font-semibold text-gray-800 mb-3 text-left flex items-center">
+                        <span className="w-1 h-4 bg-blue-500 mr-2 rounded"></span>
+                        About Us
+                      </h3>
+                      <div className="text-left space-y-2 ml-3">
+                        <p className="text-xs text-gray-600 leading-relaxed">
+                          {contentInfo.description}
+                        </p>
+                        {contentInfo.target_audience && (
+                          <div className="mt-3 p-2 bg-blue-50 rounded border-l-2 border-blue-300">
+                            <p className="text-xs text-gray-700">
+                              <strong className="text-blue-800">Perfect for:</strong> {contentInfo.target_audience}
+                            </p>
+                          </div>
+                        )}
                       </div>
+                    </div>
+                  )}
 
-                      {/* Images for Selected Category */}
-                      <div className="flex flex-wrap gap-2 items-start">
-                        {(() => {
-                          let displayImages = []
-                          let displayPreviews = []
-                          
-                          if (selectedGalleryCategory === 'All') {
-                            displayPreviews = imagePreviews
-                          } else {
-                            const categoryData = imagesByFolder[selectedGalleryCategory]
-                            if (categoryData) {
-                              displayPreviews = categoryData.previews
+                  {/* Services Section - appears when services are selected */}
+                  {services.selected.length > 0 && (
+                    <div className="border-t pt-4 mt-4 transition-all duration-500 animate-fadeIn">
+                      <h3 className="text-sm font-semibold text-gray-800 mb-3 text-left flex items-center">
+                        <span className="w-1 h-4 bg-green-500 mr-2 rounded"></span>
+                        Our Services
+                      </h3>
+                      <div className="grid grid-cols-1 gap-2 ml-3">
+                        {services.selected.slice(0, 6).map((service) => (
+                          <div key={service} className="flex items-center text-xs text-gray-600">
+                            <span className="text-green-500 mr-2 text-sm">✓</span>
+                            {service}
+                          </div>
+                        ))}
+                        {services.selected.length > 6 && (
+                          <div className="text-xs text-gray-500 italic mt-1 ml-4">
+                            +{services.selected.length - 6} more services available
+                          </div>
+                        )}
+                      </div>
+                      {services.custom && (
+                        <div className="mt-3 ml-3 p-2 bg-green-50 rounded text-xs text-gray-700 border-l-2 border-green-300">
+                          <strong className="text-green-800">Specialty Services:</strong><br />
+                          {services.custom.substring(0, 80)}{services.custom.length > 80 ? '...' : ''}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Gallery Section - appears when images are uploaded */}
+                  {uploadedImages.length > 0 && (
+                    <div className="border-t pt-4 mt-4 transition-all duration-500 animate-fadeIn">
+                      <h3 className="text-sm font-semibold text-gray-800 mb-3 text-left flex items-center">
+                        <span className="w-1 h-4 bg-orange-500 mr-2 rounded"></span>
+                        Gallery
+                      </h3>
+                      <div className="ml-3">
+                        {/* Category Filters */}
+                        <div className="mb-3 flex flex-wrap gap-1">
+                          {['All', ...folders.filter(f => imagesByFolder[f]?.files.length > 0)].map((category) => {
+                            const categoryCount = category === 'All' 
+                              ? uploadedImages.length 
+                              : imagesByFolder[category]?.files.length || 0
+                            
+                            return (
+                              <button
+                                key={category}
+                                onClick={() => setSelectedGalleryCategory(category)}
+                                className={`px-2 py-1 text-xs rounded-full border transition-colors ${
+                                  selectedGalleryCategory === category
+                                    ? 'bg-orange-500 text-white border-orange-600'
+                                    : 'bg-gray-100 text-gray-600 border-gray-300 hover:bg-gray-200'
+                                }`}
+                              >
+                                {category} ({categoryCount})
+                              </button>
+                            )
+                          })}
+                        </div>
+
+                        {/* Images for Selected Category */}
+                        <div className="flex flex-wrap gap-2 items-start">
+                          {(() => {
+                            let displayImages = []
+                            let displayPreviews = []
+                            
+                            if (selectedGalleryCategory === 'All') {
+                              displayPreviews = imagePreviews
+                            } else {
+                              const categoryData = imagesByFolder[selectedGalleryCategory]
+                              if (categoryData) {
+                                displayPreviews = categoryData.previews
+                              }
                             }
-                          }
-                          
-                          return displayPreviews.slice(0, 8).map((preview, index) => (
-                            <div key={`${selectedGalleryCategory}-${index}`} className="relative flex-shrink-0">
-                              <img
-                                src={preview}
-                                alt={`${selectedGalleryCategory} ${index + 1}`}
-                                className="border object-contain"
-                                style={{
-                                  maxHeight: '80px',
-                                  minHeight: '40px',
-                                  width: 'auto',
-                                  maxWidth: '120px'
-                                }}
-                              />
-                              {index === 7 && displayPreviews.length > 8 && (
-                                <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center">
-                                  <span className="text-white text-xs font-bold">
-                                    +{displayPreviews.length - 8}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                          ))
-                        })()}
+                            
+                            return displayPreviews.slice(0, 8).map((preview, index) => (
+                              <div key={`${selectedGalleryCategory}-${index}`} className="relative flex-shrink-0">
+                                <img
+                                  src={preview}
+                                  alt={`${selectedGalleryCategory} ${index + 1}`}
+                                  className="border object-contain"
+                                  style={{
+                                    maxHeight: '80px',
+                                    minHeight: '40px',
+                                    width: 'auto',
+                                    maxWidth: '120px'
+                                  }}
+                                />
+                                {index === 7 && displayPreviews.length > 8 && (
+                                  <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center">
+                                    <span className="text-white text-xs font-bold">
+                                      +{displayPreviews.length - 8}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            ))
+                          })()}
+                        </div>
+                        
+                        <p className="text-xs text-gray-500 mt-2">
+                          {(() => {
+                            if (selectedGalleryCategory === 'All') {
+                              return `${uploadedImages.length} image${uploadedImages.length !== 1 ? 's' : ''} across all categories`
+                            } else {
+                              const categoryCount = imagesByFolder[selectedGalleryCategory]?.files.length || 0
+                              return `${categoryCount} image${categoryCount !== 1 ? 's' : ''} in ${selectedGalleryCategory} category`
+                            }
+                          })()}
+                        </p>
                       </div>
-                      
-                      <p className="text-xs text-gray-500 mt-2">
-                        {(() => {
-                          if (selectedGalleryCategory === 'All') {
-                            return `${uploadedImages.length} image${uploadedImages.length !== 1 ? 's' : ''} across all categories`
-                          } else {
-                            const categoryCount = imagesByFolder[selectedGalleryCategory]?.files.length || 0
-                            return `${categoryCount} image${categoryCount !== 1 ? 's' : ''} in ${selectedGalleryCategory} category`
-                          }
-                        })()}
-                      </p>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* Contact Section - appears when contact info is available */}
-                {(formData.contact_email || formData.contact_phone) && (
-                  <div className="border-t pt-4 mt-4 transition-all duration-500 animate-fadeIn">
-                    <h3 className="text-sm font-semibold text-gray-800 mb-3 text-left flex items-center">
-                      <span className="w-1 h-4 bg-purple-500 mr-2 rounded"></span>
-                      Get In Touch
-                    </h3>
-                    <div className="space-y-2 ml-3">
-                      {formData.contact_phone && (
-                        <div className="flex items-center text-xs text-gray-600">
-                          <span className="text-green-500 mr-2">📞</span>
-                          <span>{formData.contact_phone}</span>
-                        </div>
-                      )}
-                      {formData.contact_email && (
-                        <div className="flex items-center text-xs text-gray-600">
-                          <span className="text-blue-500 mr-2">📧</span>
-                          <span>{formData.contact_email}</span>
-                        </div>
-                      )}
-                      {formData.city && (
-                        <div className="flex items-center text-xs text-gray-600">
-                          <span className="text-red-500 mr-2">�</span>
-                          <span>{formData.city}{formData.country && `, ${formData.country}`}</span>
-                        </div>
-                      )}
+                  {/* Contact Section - appears when contact info is available */}
+                  {(formData.contact_email || formData.contact_phone || websiteInfo.custom_domain) && (
+                    <div className="border-t pt-4 mt-4 transition-all duration-500 animate-fadeIn">
+                      <h3 className="text-sm font-semibold text-gray-800 mb-3 text-left flex items-center">
+                        <span className="w-1 h-4 bg-purple-500 mr-2 rounded"></span>
+                        Get In Touch
+                      </h3>
+                      <div className="space-y-2 ml-3">
+                        {formData.contact_phone && (
+                          <div className="flex items-center text-xs text-gray-600">
+                            <span className="text-green-500 mr-2">📞</span>
+                            <span>{formData.contact_phone}</span>
+                          </div>
+                        )}
+                        {formData.contact_email && (
+                          <div className="flex items-center text-xs text-gray-600">
+                            <span className="text-blue-500 mr-2">📧</span>
+                            <span>{formData.contact_email}</span>
+                          </div>
+                        )}
+                        {websiteInfo.custom_domain && (
+                          <div className="flex items-center text-xs text-gray-600">
+                            <span className="text-orange-500 mr-2">🌐</span>
+                            <span>{websiteInfo.custom_domain}</span>
+                          </div>
+                        )}
+                        {formData.city && (
+                          <div className="flex items-center text-xs text-gray-600">
+                            <span className="text-red-500 mr-2">📍</span>
+                            <span>{formData.city}{formData.country && `, ${formData.country}`}</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
+              )}
             </div>
             
             <div className="mt-4 text-center">
               <p className="text-xs text-gray-500">
-                ✨ This preview updates in real-time as you type!
+                {selectedTemplateData ? (
+                  <>✨ Template preview with your business data! Select different templates to update the preview.</>
+                ) : (
+                  <>✨ This preview updates in real-time as you type! Select a template to see it in action.</>
+                )}
               </p>
             </div>
           </div>

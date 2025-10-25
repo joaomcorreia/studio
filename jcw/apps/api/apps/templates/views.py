@@ -2,23 +2,45 @@ from rest_framework import viewsets, status, generics
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from django.shortcuts import get_object_or_404
 from django.db import transaction
+from django.utils.decorators import method_decorator
 from .models import Template, TemplateSection
 from .serializers import TemplateSerializer, TemplateUploadSerializer, TemplateComposeSerializer
 from apps.tenants.views import IsAdminUser
+from .permissions import admin_required
 
 
 class TemplateViewSet(viewsets.ModelViewSet):
     queryset = Template.objects.all()
     permission_classes = []  # Temporarily disabled for testing
-    parser_classes = [MultiPartParser, FormParser]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
     
     def get_serializer_class(self):
         if self.action == 'upload':
             return TemplateUploadSerializer
         return TemplateSerializer
+    
+    @method_decorator(admin_required)
+    def create(self, request, *args, **kwargs):
+        """Create a new template - Admin only"""
+        return super().create(request, *args, **kwargs)
+    
+    @method_decorator(admin_required)
+    def update(self, request, *args, **kwargs):
+        """Update a template - Admin only"""
+        return super().update(request, *args, **kwargs)
+    
+    @method_decorator(admin_required)
+    def partial_update(self, request, *args, **kwargs):
+        """Partially update a template - Admin only"""
+        return super().partial_update(request, *args, **kwargs)
+    
+    @method_decorator(admin_required)
+    def destroy(self, request, *args, **kwargs):
+        """Delete a template - Admin only"""
+        return super().destroy(request, *args, **kwargs)
     
     def list(self, request, *args, **kwargs):
         """List all templates with optional category filtering"""
@@ -33,6 +55,7 @@ class TemplateViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
     
+    @method_decorator(admin_required)
     @action(detail=False, methods=['post'])
     def upload(self, request):
         """Create a new template with AI-generated HTML/CSS from uploaded image"""
