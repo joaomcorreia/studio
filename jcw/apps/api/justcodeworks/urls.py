@@ -20,6 +20,7 @@ def tenant_api_root(request):
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', tenant_api_root, name='tenant_api_root'),
+    path('api/', include('apps.auth.urls')),  # Authentication endpoints
     path('api/tenant/', include('apps.tenants.urls')),
     path('api/sections/', include('apps.sections.urls')),
     path('api/templates/', include('apps.templates.urls')),

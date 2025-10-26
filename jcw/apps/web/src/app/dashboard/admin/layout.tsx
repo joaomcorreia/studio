@@ -1,6 +1,7 @@
 'use client'
 
 import { usePathname, useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 
 export default function AdminLayout({
@@ -10,11 +11,76 @@ export default function AdminLayout({
 }) {
   const pathname = usePathname()
   const router = useRouter()
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    // Skip authentication check for login page
+    if (pathname === '/dashboard/admin/login') {
+      setIsLoading(false)
+      return
+    }
+
+    const checkAuth = async () => {
+      const token = localStorage.getItem('access_token')
+      
+      if (!token) {
+        router.push('/dashboard/admin/login')
+        return
+      }
+
+      try {
+        // Verify token with backend
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api'
+        const response = await fetch(`${apiUrl}/auth/me/`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        })
+
+        if (response.ok) {
+          setIsAuthenticated(true)
+        } else {
+          // Token is invalid, remove it and redirect to login
+          localStorage.removeItem('access_token')
+          localStorage.removeItem('refresh_token')
+          router.push('/dashboard/admin/login')
+        }
+      } catch (error) {
+        console.error('Auth check failed:', error)
+        router.push('/dashboard/admin/login')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    checkAuth()
+  }, [pathname, router])
 
   const handleLogout = () => {
     localStorage.removeItem('access_token')
     localStorage.removeItem('refresh_token')
     router.push('/dashboard/admin/login')
+  }
+
+  // Show loading spinner while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      </div>
+    )
+  }
+
+  // If not authenticated and not on login page, don't render anything
+  // (the useEffect will handle the redirect)
+  if (!isAuthenticated && pathname !== '/dashboard/admin/login') {
+    return null
+  }
+
+  // If on login page, render children without layout
+  if (pathname === '/dashboard/admin/login') {
+    return <>{children}</>
   }
   
   const navigation = [

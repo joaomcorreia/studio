@@ -25,7 +25,7 @@ export default function DashboardEditorPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [previewMode, setPreviewMode] = useState(false)
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
-  const [selectedPlan, setSelectedPlan] = useState<PlanType>('basic')
+  const [selectedPlan, setSelectedPlan] = useState<PlanType>('basic') // Plan selection state
 
   useEffect(() => {
     loadDashboardComponents()

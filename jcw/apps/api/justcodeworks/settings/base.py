@@ -64,6 +64,7 @@ TENANT_APPS = [
     'django.contrib.messages',
     
     # JCW tenant-specific apps
+    'apps.auth',  # Authentication app
     'apps.sections',
     'apps.templates',
     'apps.pages',
