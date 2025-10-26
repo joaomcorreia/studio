@@ -28,11 +28,13 @@ class OnboardingStartView(APIView):
                     tenant = Tenant.objects.create(
                         slug=unique_slug,
                         business_name=serializer.validated_data['business_name'],
-                        industry_category=serializer.validated_data.get('industry_category', ''),
-                        city=serializer.validated_data.get('city', ''),
-                        country=serializer.validated_data.get('country', ''),
                         contact_email=serializer.validated_data['contact_email'],
                         contact_phone=serializer.validated_data.get('contact_phone', ''),
+                        website_url=serializer.validated_data.get('website_url', ''),
+                        industry_category=serializer.validated_data.get('industry_category', 'other'),
+                        city=serializer.validated_data.get('city', ''),
+                        country=serializer.validated_data.get('country', ''),
+                        plan=serializer.validated_data.get('plan', 'basic'),
                     )
                     
                     # Create domain for development
@@ -50,7 +52,7 @@ class OnboardingStartView(APIView):
                         'success': True,
                         'tenant_id': tenant.id,
                         'slug': unique_slug,
-                        'dev_url': tenant.dev_subdomain_url,
+                        'dev_url': tenant.dev_url,
                         'message': f'Tenant "{tenant.business_name}" created successfully!'
                     }, status=status.HTTP_201_CREATED)
                     

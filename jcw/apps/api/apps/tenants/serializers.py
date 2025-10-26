@@ -16,7 +16,7 @@ class TenantSerializer(serializers.ModelSerializer):
         model = Tenant
         fields = [
             'id', 'slug', 'business_name', 'industry_category', 'city', 'country',
-            'contact_email', 'contact_phone', 'is_active', 'dev_url',
-            'domains', 'created_at', 'updated_at'
+            'contact_email', 'contact_phone', 'website_url', 'plan', 'is_active', 
+            'dev_url', 'domains', 'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']

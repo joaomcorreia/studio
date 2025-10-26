@@ -11,16 +11,19 @@ export default function UserLayout({
         </div>
         <nav className="mt-6">
           <a href="/dashboard/user" className="block px-6 py-3 text-gray-700 hover:bg-gray-100">
-            My Site
+            Dashboard
           </a>
-          <a href="/dashboard/user/sections" className="block px-6 py-3 text-gray-700 hover:bg-gray-100">
-            Section Library
+          <a href="/dashboard/user/content-strategy" className="block px-6 py-3 text-gray-700 hover:bg-gray-100">
+            Content Strategy
           </a>
-          <a href="/dashboard/user/theme" className="block px-6 py-3 text-gray-700 hover:bg-gray-100">
-            Theme Settings
+          <a href="/dashboard/user/subscriptions" className="block px-6 py-3 text-gray-700 hover:bg-gray-100">
+            Subscriptions
           </a>
-          <a href="/dashboard/user/preview" className="block px-6 py-3 text-gray-700 hover:bg-gray-100">
-            Preview Site
+          <a href="/dashboard/user/settings" className="block px-6 py-3 text-gray-700 hover:bg-gray-100">
+            Settings
+          </a>
+          <a href="/dashboard/user/edit-website" className="block px-6 py-3 text-gray-700 hover:bg-gray-100">
+            Edit Website
           </a>
         </nav>
       </aside>

@@ -1033,89 +1033,34 @@ export default function BuildPage() {
                       )}
                     </div>
 
-                    {/* Target Audience */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Who are your ideal customers?
-                      </label>
-                      <input
-                        type="text"
-                        value={contentInfo.target_audience}
-                        onChange={(e) => handleContentChange('target_audience', e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                        placeholder="e.g., Food lovers, families, couples on date nights, business professionals"
-                      />
-                      <p className="text-xs text-gray-500 mt-1">
-                        🎯 This helps us write content that speaks to your customers
-                      </p>
-                    </div>
-
-                    {/* Key Message with AI Generation */}
-                    <div>
-                      <div className="flex justify-between items-center mb-2">
-                        <label className="block text-sm font-medium text-gray-700">
-                          Key Message or Unique Selling Point
-                        </label>
-                        <button
-                          type="button"
-                          onClick={() => generateAIContent('key_message')}
-                          disabled={!formData.business_name || isGeneratingAI}
-                          className="inline-flex items-center px-3 py-1 text-xs font-medium text-white bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full hover:from-blue-600 hover:to-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm hover:shadow-md"
-                        >
-                          {isGeneratingAI ? (
-                            <>
-                              <svg className="animate-spin -ml-1 mr-2 h-3 w-3 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                              </svg>
-                              Generating...
-                            </>
-                          ) : (
-                            <>
+                    {/* Content Strategy Notice */}
+                    <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                      <div className="flex items-start">
+                        <div className="flex-shrink-0">
+                          <svg className="h-5 w-5 text-blue-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        </div>
+                        <div className="ml-3">
+                          <p className="text-sm font-medium text-blue-800">Need to define your target audience and key messaging?</p>
+                          <p className="text-sm text-blue-700 mt-1">
+                            Complete your content strategy in the user dashboard for better website results.
+                          </p>
+                          <div className="mt-2">
+                            <button
+                              onClick={() => window.open('/dashboard/user/content-strategy', '_blank')}
+                              className="inline-flex items-center px-3 py-1 text-xs font-medium text-blue-700 bg-blue-100 rounded-full hover:bg-blue-200 transition-colors"
+                            >
                               <svg className="mr-1 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                               </svg>
-                              AI Generate
-                            </>
-                          )}
-                        </button>
+                              Go to Content Strategy
+                            </button>
+                          </div>
+                        </div>
                       </div>
-                      <input
-                        type="text"
-                        value={contentInfo.key_message}
-                        onChange={(e) => handleContentChange('key_message', e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                        placeholder="e.g., Authentic Italian cuisine, 24/7 service, Award-winning quality, Best prices in town"
-                      />
-                      <p className="text-xs text-gray-500 mt-1">
-                        ⭐ What should visitors remember most about your business?
-                      </p>
                     </div>
 
-                    {/* Call to Action */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        What should visitors do first?
-                      </label>
-                      <select
-                        value={contentInfo.call_to_action}
-                        onChange={(e) => handleContentChange('call_to_action', e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                      >
-                        <option value="">Select primary action...</option>
-                        <option value="call">Call us for information</option>
-                        <option value="book">Book an appointment</option>
-                        <option value="order">Order online</option>
-                        <option value="visit">Visit our location</option>
-                        <option value="quote">Get a quote</option>
-                        <option value="contact">Contact us</option>
-                        <option value="browse">Browse our services</option>
-                        <option value="subscribe">Join our mailing list</option>
-                      </select>
-                      <p className="text-xs text-gray-500 mt-1">
-                        📞 This will be the main button/action on your website
-                      </p>
-                    </div>
                   </div>
 
                   {/* Content Preview & AI Analysis */}

@@ -21,13 +21,13 @@ class Tenant(models.Model):
     
     # Business information
     business_name = models.CharField(max_length=100)
-    industry_category = models.CharField(max_length=50, blank=True)
     city = models.CharField(max_length=100, blank=True)
     country = models.CharField(max_length=100, blank=True)
     
     # Contact info
     contact_email = models.EmailField()
     contact_phone = models.CharField(max_length=20, blank=True)
+    website_url = models.URLField(blank=True)
     
     # Industry categorization
     INDUSTRY_CHOICES = [
@@ -35,9 +35,23 @@ class Tenant(models.Model):
         ('retail', 'Retail'),
         ('services', 'Services'),
         ('healthcare', 'Healthcare'),
+        ('construction', 'Construction'),
+        ('transport', 'Transport'),
+        ('travel', 'Travel'),
+        ('auto_repair', 'Auto Repair'),
+        ('beauty', 'Beauty'),
         ('other', 'Other'),
     ]
     industry_category = models.CharField(max_length=20, choices=INDUSTRY_CHOICES, default='other')
+    
+    # Plan information
+    PLAN_CHOICES = [
+        ('basic', 'Basic'),
+        ('starter', 'Starter'),
+        ('premium', 'Premium'),
+        ('pro', 'Pro'),
+    ]
+    plan = models.CharField(max_length=20, choices=PLAN_CHOICES, default='basic')
     
     # Tenant owner
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='owned_tenants', null=True, blank=True)

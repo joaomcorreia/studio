@@ -6,11 +6,13 @@ class OnboardingSerializer(serializers.Serializer):
     Serializer for onboarding flow data.
     """
     business_name = serializers.CharField(max_length=100)
+    contact_email = serializers.EmailField()
+    contact_phone = serializers.CharField(max_length=20, required=False, allow_blank=True)
+    website_url = serializers.URLField(required=False, allow_blank=True)
     industry_category = serializers.CharField(max_length=50, required=False, allow_blank=True)
     city = serializers.CharField(max_length=100, required=False, allow_blank=True)
     country = serializers.CharField(max_length=100, required=False, allow_blank=True)
-    contact_email = serializers.EmailField()
-    contact_phone = serializers.CharField(max_length=20, required=False, allow_blank=True)
+    plan = serializers.CharField(max_length=20, required=False, allow_blank=True)
     
     def validate_business_name(self, value):
         if len(value.strip()) < 2:
