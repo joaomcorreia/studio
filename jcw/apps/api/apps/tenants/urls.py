@@ -7,7 +7,5 @@ urlpatterns = [
     path('<uuid:pk>/', views.TenantDetailView.as_view(), name='tenant_detail'),
     # For tenant schema (user access)
     path('info/', views.TenantInfoView.as_view(), name='tenant_info'),
-    # Public endpoint for frontend
-    path('public/list/', views.public_tenant_list, name='public_tenant_list'),
     path('by-slug/<str:slug>/', views.get_tenant_by_slug, name='tenant_by_slug'),
 ]

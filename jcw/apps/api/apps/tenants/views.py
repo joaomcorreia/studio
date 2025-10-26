@@ -46,17 +46,6 @@ class TenantInfoView(generics.RetrieveAPIView):
 
 @api_view(['GET'])
 @permission_classes([permissions.AllowAny])  # Public endpoint for frontend
-def public_tenant_list(request):
-    """
-    Public endpoint to list all active tenants.
-    """
-    tenants = Tenant.objects.filter(is_active=True).order_by('-created_at')
-    serializer = TenantSerializer(tenants, many=True)
-    return Response(serializer.data)
-
-
-@api_view(['GET'])
-@permission_classes([permissions.AllowAny])  # Public endpoint for frontend
 def get_tenant_by_slug(request, slug):
     """
     Get tenant information by slug (public endpoint for frontend routing).
