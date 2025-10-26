@@ -1,8 +1,9 @@
 'use client'
 
-import { usePathname, useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
+import { useEffect } from 'react'
 import Link from 'next/link'
+import { useAuth } from '@/hooks/useAuth'
 
 export default function AdminLayout({
   children,
@@ -10,57 +11,22 @@ export default function AdminLayout({
   children: React.ReactNode
 }) {
   const pathname = usePathname()
-  const router = useRouter()
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
+  const { user, isLoading, isAuthenticated, logout } = useAuth()
 
   useEffect(() => {
     // Skip authentication check for login page
     if (pathname === '/dashboard/admin/login') {
-      setIsLoading(false)
       return
     }
 
-    const checkAuth = async () => {
-      const token = localStorage.getItem('access_token')
-      
-      if (!token) {
-        router.push('/dashboard/admin/login')
-        return
-      }
-
-      try {
-        // Verify token with backend
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api'
-        const response = await fetch(`${apiUrl}/auth/me/`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        })
-
-        if (response.ok) {
-          setIsAuthenticated(true)
-        } else {
-          // Token is invalid, remove it and redirect to login
-          localStorage.removeItem('access_token')
-          localStorage.removeItem('refresh_token')
-          router.push('/dashboard/admin/login')
-        }
-      } catch (error) {
-        console.error('Auth check failed:', error)
-        router.push('/dashboard/admin/login')
-      } finally {
-        setIsLoading(false)
-      }
+    // Redirect to login if not authenticated and not currently loading
+    if (!isLoading && !isAuthenticated) {
+      window.location.href = '/dashboard/admin/login'
     }
-
-    checkAuth()
-  }, [pathname, router])
+  }, [pathname, isLoading, isAuthenticated])
 
   const handleLogout = () => {
-    localStorage.removeItem('access_token')
-    localStorage.removeItem('refresh_token')
-    router.push('/dashboard/admin/login')
+    logout()
   }
 
   // Show loading spinner while checking authentication
@@ -217,18 +183,22 @@ export default function AdminLayout({
         {/* Footer */}
         <div className="absolute bottom-0 w-64 p-4 border-t border-gray-200 bg-white">
           <div className="flex items-center">
-            <div className="bg-gray-300 rounded-full p-2 mr-3">
-              <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="bg-green-100 rounded-full p-2 mr-3">
+              <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">Admin User</p>
-              <p className="text-xs text-gray-500 truncate">System Administrator</p>
+              <p className="text-sm font-medium text-gray-900 truncate">
+                {user?.username || 'Loading...'}
+              </p>
+              <p className="text-xs text-gray-500 truncate">
+                {user?.is_superuser ? 'Super Admin' : user?.is_staff ? 'Staff' : 'User'}
+              </p>
             </div>
             <button 
               onClick={handleLogout}
-              className="ml-2 text-gray-400 hover:text-gray-600 transition-colors"
+              className="ml-2 text-gray-400 hover:text-red-600 transition-colors"
               title="Logout"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

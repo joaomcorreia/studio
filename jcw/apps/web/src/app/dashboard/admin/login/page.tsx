@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useAuth } from '@/hooks/useAuth'
 
 export default function AdminLogin() {
   const [username, setUsername] = useState('')
@@ -9,6 +10,7 @@ export default function AdminLogin() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const { login } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -16,29 +18,13 @@ export default function AdminLogin() {
     setError('')
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api'
-      const response = await fetch(`${apiUrl}/auth/login/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username,
-          password,
-        }),
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        // Store tokens in localStorage
-        localStorage.setItem('access_token', data.access)
-        localStorage.setItem('refresh_token', data.refresh)
-        
+      const result = await login(username, password)
+      
+      if (result.success) {
         // Redirect to admin dashboard
         router.push('/dashboard/admin')
       } else {
-        const errorData = await response.json()
-        setError(errorData.detail || 'Login failed')
+        setError(result.error || 'Login failed')
       }
     } catch (error) {
       setError('Network error. Please try again.')
