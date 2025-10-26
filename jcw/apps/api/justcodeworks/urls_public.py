@@ -14,6 +14,9 @@ def api_root(request):
         }
     })
 
+# Import the website view
+from apps.onboarding.views import WebsiteView
+
 # Public schema URLs (shared across all tenants)
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -22,4 +25,5 @@ urlpatterns = [
     path('api/tenants/', include('apps.tenants.urls')),
     path('api/onboarding/', include('apps.onboarding.urls')),
     path('api/admin/', include('apps.core.urls')),
+    path('api/websites/<str:slug>/', WebsiteView.as_view(), name='website_detail'),
 ]

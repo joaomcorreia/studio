@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from django.db import transaction
+from django.shortcuts import get_object_or_404
 from apps.tenants.models import Tenant, Domain
 from apps.core.utils import generate_tenant_slug, ensure_unique_tenant_slug
 from .serializers import OnboardingSerializer
@@ -83,4 +84,34 @@ class CheckSlugView(APIView):
             'suggested_slug': unique_slug,
             'dev_url': f"http://{unique_slug}{suffix}:3000",
             'is_available': base_slug == unique_slug
+        })
+
+
+class WebsiteView(APIView):
+    """
+    Retrieve website data by slug for localhost preview.
+    """
+    permission_classes = [AllowAny]
+    
+    def get(self, request, slug):
+        # Find tenant by slug
+        tenant = get_object_or_404(Tenant, slug=slug)
+        
+        # For now, return basic tenant data
+        # Later this can be enhanced with full template rendering
+        return Response({
+            'success': True,
+            'slug': tenant.slug,
+            'business_name': tenant.business_name,
+            'website_name': tenant.business_name,  # Fallback to business name
+            'description': f"Welcome to {tenant.business_name}",
+            'contact_email': tenant.contact_email,
+            'contact_phone': tenant.contact_phone,
+            'city': tenant.city,
+            'country': tenant.country,
+            'industry_category': tenant.industry_category,
+            'services': [],  # Will be populated from tenant data
+            'logo_url': None,  # Will be populated when logo functionality is added
+            'template_html': None,  # Will be populated when template rendering is added
+            'dev_url': tenant.dev_subdomain_url,
         })
