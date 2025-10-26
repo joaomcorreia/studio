@@ -26,7 +26,7 @@ export default function SectionsPage() {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">Total Sections</p>
-              <p className="text-2xl font-bold text-gray-900">24</p>
+              <p className="text-2xl font-bold text-gray-900">0</p>
             </div>
           </div>
         </div>
@@ -40,7 +40,7 @@ export default function SectionsPage() {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">Heroes</p>
-              <p className="text-2xl font-bold text-gray-900">8</p>
+              <p className="text-2xl font-bold text-gray-900">0</p>
             </div>
           </div>
         </div>
@@ -54,7 +54,7 @@ export default function SectionsPage() {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">Features</p>
-              <p className="text-2xl font-bold text-gray-900">10</p>
+              <p className="text-2xl font-bold text-gray-900">0</p>
             </div>
           </div>
         </div>
@@ -68,7 +68,7 @@ export default function SectionsPage() {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">CTA Sections</p>
-              <p className="text-2xl font-bold text-gray-900">6</p>
+              <p className="text-2xl font-bold text-gray-900">0</p>
             </div>
           </div>
         </div>
@@ -100,80 +100,38 @@ export default function SectionsPage() {
         </div>
       </div>
 
-      {/* Sections Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* Hero Section Card */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <div className="h-32 bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
-            <span className="text-white font-semibold">Hero Section Preview</span>
-          </div>
-          <div className="p-4">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-lg font-medium text-gray-900">Modern Hero</h3>
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                Hero
-              </span>
-            </div>
-            <p className="text-sm text-gray-500 mb-4">
-              Clean hero section with call-to-action buttons and background image support
-            </p>
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-gray-400">Used in 5 sites</span>
-              <div className="flex space-x-2">
-                <button className="text-blue-600 hover:text-blue-900 text-sm">Edit</button>
-                <button className="text-gray-600 hover:text-gray-900 text-sm">Preview</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Feature Section Card */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <div className="h-32 bg-gradient-to-r from-green-500 to-blue-500 flex items-center justify-center">
-            <span className="text-white font-semibold">Features Grid Preview</span>
-          </div>
-          <div className="p-4">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-lg font-medium text-gray-900">Features Grid</h3>
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                Features
-              </span>
-            </div>
-            <p className="text-sm text-gray-500 mb-4">
-              Responsive grid layout showcasing key features with icons and descriptions
-            </p>
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-gray-400">Used in 8 sites</span>
-              <div className="flex space-x-2">
-                <button className="text-blue-600 hover:text-blue-900 text-sm">Edit</button>
-                <button className="text-gray-600 hover:text-gray-900 text-sm">Preview</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* CTA Section Card */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <div className="h-32 bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center">
-            <span className="text-white font-semibold">CTA Section Preview</span>
-          </div>
-          <div className="p-4">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-lg font-medium text-gray-900">Call to Action</h3>
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                CTA
-              </span>
-            </div>
-            <p className="text-sm text-gray-500 mb-4">
-              Conversion-focused section with compelling copy and prominent action buttons
-            </p>
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-gray-400">Used in 12 sites</span>
-              <div className="flex space-x-2">
-                <button className="text-blue-600 hover:text-blue-900 text-sm">Edit</button>
-                <button className="text-gray-600 hover:text-gray-900 text-sm">Preview</button>
-              </div>
-            </div>
+      {/* Empty State */}
+      <div className="bg-white rounded-lg shadow-sm border-2 border-dashed border-gray-300 p-12 text-center">
+        <div className="mx-auto max-w-md">
+          <svg
+            className="mx-auto h-12 w-12 text-gray-400"
+            stroke="currentColor"
+            fill="none"
+            viewBox="0 0 48 48"
+            aria-hidden="true"
+          >
+            <path
+              d="M8 14v20c0 4.418 7.163 8 16 8 1.381 0 2.721-.087 4-.252M8 14c0 4.418 7.163 8 16 8s16-3.582 16-8M8 14c0-4.418 7.163-8 16-8s16 3.582 16 8m0 0v14m0-4c0 4.418-7.163 8-16 8s-16-3.582-16-8"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          <h3 className="mt-4 text-lg font-semibold text-gray-900">No sections created yet</h3>
+          <p className="mt-2 text-sm text-gray-500">
+            Get started by creating your first reusable website section. Sections help you build consistent, 
+            professional layouts across all your websites.
+          </p>
+          <div className="mt-6">
+            <button 
+              type="button"
+              className="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+            >
+              <svg className="-ml-0.5 mr-1.5 h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
+              </svg>
+              Create Your First Section
+            </button>
           </div>
         </div>
       </div>

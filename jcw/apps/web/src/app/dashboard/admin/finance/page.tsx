@@ -36,73 +36,21 @@ export default function FinancePage() {
   const [timeframe, setTimeframe] = useState<'7d' | '30d' | '90d' | '1y'>('30d')
   const [isLoading, setIsLoading] = useState(true)
   const [metrics, setMetrics] = useState<FinancialMetrics>({
-    totalRevenue: 45678.90,
-    totalUsers: 324,
-    avgRevenuePerUser: 140.99,
-    monthlyGrowth: 12.5,
-    activeSubscriptions: 298,
-    churnRate: 2.8,
-    lifetimeValue: 1250.00,
-    costs: 15234.50,
-    profit: 30444.40,
-    profitMargin: 66.7
+    totalRevenue: 0,
+    totalUsers: 0,
+    avgRevenuePerUser: 0,
+    monthlyGrowth: 0,
+    activeSubscriptions: 0,
+    churnRate: 0,
+    lifetimeValue: 0,
+    costs: 0,
+    profit: 0,
+    profitMargin: 0
   })
 
-  const [recentTransactions] = useState<Transaction[]>([
-    {
-      id: '1',
-      date: '2025-10-25',
-      description: 'Premium Subscription - John Doe',
-      amount: 29.99,
-      type: 'income',
-      category: 'Subscription',
-      status: 'completed'
-    },
-    {
-      id: '2', 
-      date: '2025-10-25',
-      description: 'Server Hosting - AWS',
-      amount: 1250.00,
-      type: 'expense',
-      category: 'Infrastructure',
-      status: 'completed'
-    },
-    {
-      id: '3',
-      date: '2025-10-24',
-      description: 'Website Builder Plan - Jane Smith',
-      amount: 49.99,
-      type: 'income',
-      category: 'One-time',
-      status: 'completed'
-    },
-    {
-      id: '4',
-      date: '2025-10-24',
-      description: 'Marketing Campaign - Google Ads',
-      amount: 890.50,
-      type: 'expense',
-      category: 'Marketing',
-      status: 'pending'
-    },
-    {
-      id: '5',
-      date: '2025-10-23',
-      description: 'Enterprise Plan - TechCorp Inc',
-      amount: 299.99,
-      type: 'income',
-      category: 'Enterprise',
-      status: 'completed'
-    }
-  ])
+  const [recentTransactions] = useState<Transaction[]>([])
 
-  const [revenueData] = useState<RevenueData[]>([
-    { month: 'Jun', revenue: 38500, users: 285, expenses: 12400 },
-    { month: 'Jul', revenue: 41200, users: 298, expenses: 13100 },
-    { month: 'Aug', revenue: 39800, users: 312, expenses: 14200 },
-    { month: 'Sep', revenue: 43600, users: 319, expenses: 13800 },
-    { month: 'Oct', revenue: 45678, users: 324, expenses: 15234 }
-  ])
+  const [revenueData] = useState<RevenueData[]>([])
 
   useEffect(() => {
     // Simulate loading

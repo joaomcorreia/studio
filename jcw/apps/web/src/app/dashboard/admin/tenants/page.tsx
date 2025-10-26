@@ -40,9 +40,9 @@ export default function TenantsPage() {
 
   const fetchTenants = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/tenants/public/list/')
-      const data = await response.json()
-      setTenants(data || [])
+      // For now, we'll just set empty array since we removed demo data
+      // This will be replaced with proper authenticated API call when auth is enabled
+      setTenants([])
     } catch (error) {
       console.error('Error fetching tenants:', error)
     } finally {

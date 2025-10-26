@@ -31,7 +31,7 @@ export default function ActivityPage() {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">Today's Activities</p>
-              <p className="text-2xl font-bold text-gray-900">47</p>
+              <p className="text-2xl font-bold text-gray-900">0</p>
             </div>
           </div>
         </div>
@@ -45,7 +45,7 @@ export default function ActivityPage() {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">Active Users</p>
-              <p className="text-2xl font-bold text-gray-900">8</p>
+              <p className="text-2xl font-bold text-gray-900">0</p>
             </div>
           </div>
         </div>
@@ -59,7 +59,7 @@ export default function ActivityPage() {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">Errors</p>
-              <p className="text-2xl font-bold text-gray-900">2</p>
+              <p className="text-2xl font-bold text-gray-900">0</p>
             </div>
           </div>
         </div>
@@ -73,7 +73,7 @@ export default function ActivityPage() {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">System Health</p>
-              <p className="text-2xl font-bold text-green-600">98.5%</p>
+              <p className="text-2xl font-bold text-green-600">100%</p>
             </div>
           </div>
         </div>
@@ -102,142 +102,33 @@ export default function ActivityPage() {
         </div>
       </div>
 
-      {/* Activity Timeline */}
+      {/* Empty State */}
       <div className="bg-white shadow rounded-lg">
         <div className="px-6 py-4 border-b border-gray-200">
           <h3 className="text-lg font-medium text-gray-900">Recent Activity</h3>
         </div>
-        <div className="px-6 py-4">
-          <div className="flow-root">
-            <ul className="-mb-8">
-              {/* Activity Item 1 */}
-              <li className="relative pb-8">
-                <div className="absolute left-0 top-0 flex h-full items-start">
-                  <div className="h-full w-0.5 bg-gray-200"></div>
-                </div>
-                <div className="relative flex space-x-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 ring-8 ring-white">
-                    <svg className="h-4 w-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <div className="flex min-w-0 flex-1 justify-between space-x-4 pt-1.5">
-                    <div>
-                      <p className="text-sm text-gray-900">
-                        New tenant <span className="font-medium">Tech Solutions Inc.</span> successfully onboarded
-                      </p>
-                      <p className="mt-0.5 text-xs text-gray-500">Admin user: john@techsolutions.com</p>
-                    </div>
-                    <div className="whitespace-nowrap text-right text-sm text-gray-500">
-                      <time dateTime="2024-01-15T09:30">2 minutes ago</time>
-                    </div>
-                  </div>
-                </div>
-              </li>
-
-              {/* Activity Item 2 */}
-              <li className="relative pb-8">
-                <div className="absolute left-0 top-0 flex h-full items-start">
-                  <div className="h-full w-0.5 bg-gray-200"></div>
-                </div>
-                <div className="relative flex space-x-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 ring-8 ring-white">
-                    <svg className="h-4 w-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                    </svg>
-                  </div>
-                  <div className="flex min-w-0 flex-1 justify-between space-x-4 pt-1.5">
-                    <div>
-                      <p className="text-sm text-gray-900">
-                        Template <span className="font-medium">Restaurant Pro</span> updated by admin
-                      </p>
-                      <p className="mt-0.5 text-xs text-gray-500">Modified hero section and menu components</p>
-                    </div>
-                    <div className="whitespace-nowrap text-right text-sm text-gray-500">
-                      <time dateTime="2024-01-15T09:15">17 minutes ago</time>
-                    </div>
-                  </div>
-                </div>
-              </li>
-
-              {/* Activity Item 3 */}
-              <li className="relative pb-8">
-                <div className="absolute left-0 top-0 flex h-full items-start">
-                  <div className="h-full w-0.5 bg-gray-200"></div>
-                </div>
-                <div className="relative flex space-x-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-100 ring-8 ring-white">
-                    <svg className="h-4 w-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                    </svg>
-                  </div>
-                  <div className="flex min-w-0 flex-1 justify-between space-x-4 pt-1.5">
-                    <div>
-                      <p className="text-sm text-gray-900">
-                        Error: Failed to deploy website for <span className="font-medium">Mary's Restaurant</span>
-                      </p>
-                      <p className="mt-0.5 text-xs text-gray-500">Error code: DEPLOY_001 - Domain configuration issue</p>
-                    </div>
-                    <div className="whitespace-nowrap text-right text-sm text-gray-500">
-                      <time dateTime="2024-01-15T08:45">1 hour ago</time>
-                    </div>
-                  </div>
-                </div>
-              </li>
-
-              {/* Activity Item 4 */}
-              <li className="relative pb-8">
-                <div className="absolute left-0 top-0 flex h-full items-start">
-                  <div className="h-full w-0.5 bg-gray-200"></div>
-                </div>
-                <div className="relative flex space-x-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-100 ring-8 ring-white">
-                    <svg className="h-4 w-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                  </div>
-                  <div className="flex min-w-0 flex-1 justify-between space-x-4 pt-1.5">
-                    <div>
-                      <p className="text-sm text-gray-900">
-                        User login: <span className="font-medium">sarah@marysrestaurant.com</span>
-                      </p>
-                      <p className="mt-0.5 text-xs text-gray-500">From IP: 192.168.1.100 - Dashboard accessed</p>
-                    </div>
-                    <div className="whitespace-nowrap text-right text-sm text-gray-500">
-                      <time dateTime="2024-01-15T08:30">2 hours ago</time>
-                    </div>
-                  </div>
-                </div>
-              </li>
-
-              {/* Activity Item 5 */}
-              <li className="relative">
-                <div className="relative flex space-x-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 ring-8 ring-white">
-                    <svg className="h-4 w-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100-4m0 4v2m0-6V4" />
-                    </svg>
-                  </div>
-                  <div className="flex min-w-0 flex-1 justify-between space-x-4 pt-1.5">
-                    <div>
-                      <p className="text-sm text-gray-900">
-                        System backup completed successfully
-                      </p>
-                      <p className="mt-0.5 text-xs text-gray-500">Database and files backed up to AWS S3</p>
-                    </div>
-                    <div className="whitespace-nowrap text-right text-sm text-gray-500">
-                      <time dateTime="2024-01-15T03:00">6 hours ago</time>
-                    </div>
-                  </div>
-                </div>
-              </li>
-            </ul>
+        <div className="px-6 py-12">
+          <div className="text-center">
+            <svg
+              className="mx-auto h-12 w-12 text-gray-400"
+              stroke="currentColor"
+              fill="none"
+              viewBox="0 0 48 48"
+              aria-hidden="true"
+            >
+              <path
+                d="M34 40h10v-4a6 6 0 00-10.712-3.714M34 40H14m20 0v-4a9.971 9.971 0 00-.712-3.714M14 40H4v-4a6 6 0 0110.713-3.714M14 40v-4c0-1.313.253-2.566.713-3.714m0 0A10.003 10.003 0 0124 26c4.21 0 7.813 2.602 9.288 6.286M30 14a6 6 0 11-12 0 6 6 0 0112 0zm12 6a4 4 0 11-8 0 4 4 0 018 0zm-28 0a4 4 0 11-8 0 4 4 0 018 0z"
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <h3 className="mt-4 text-lg font-semibold text-gray-900">No activity yet</h3>
+            <p className="mt-2 text-sm text-gray-500">
+              Once users start creating tenants and using the platform, their activities will appear here.
+              This includes tenant creation, template usage, system events, and more.
+            </p>
           </div>
-        </div>
-        <div className="px-6 py-4 border-t border-gray-200">
-          <button className="w-full text-center text-sm text-blue-600 hover:text-blue-900 font-medium">
-            Load More Activities
-          </button>
         </div>
       </div>
     </div>
