@@ -1,0 +1,1 @@
+cmd /c "cd /d C:\projects\studio\jcw\apps\web && npx next dev -p 3001"

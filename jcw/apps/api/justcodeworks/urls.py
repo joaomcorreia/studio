@@ -19,12 +19,12 @@ def tenant_api_root(request):
 # Tenant-specific URLs
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', tenant_api_root, name='tenant_api_root'),
-    path('api/', include('apps.auth.urls')),  # Authentication endpoints
+    path('api/', include('apps.auth.urls')),  # Authentication endpoints - must come before generic api/ path
     path('api/tenant/', include('apps.tenants.urls')),
     path('api/sections/', include('apps.sections.urls')),
     path('api/templates/', include('apps.templates.urls')),
     path('api/pages/', include('apps.pages.urls')),
     path('api/themes/', include('apps.themes.urls')),
     path('api/activity/', include('apps.activity.urls')),
+    path('api/', tenant_api_root, name='tenant_api_root'),  # Generic API root - must come last
 ]

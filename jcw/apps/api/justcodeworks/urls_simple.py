@@ -24,7 +24,7 @@ def api_root(request):
 # Simple URL configuration (no tenancy)
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', api_root, name='api_root'),
+    path('api/', include('apps.auth.urls')),  # Authentication endpoints - must come before generic api/ path
     path('api/onboarding/', include('apps.onboarding.urls')),
     path('api/admin/', include('apps.core.urls')),
     path('api/tenants/', include('apps.tenants.urls')),
@@ -33,6 +33,7 @@ urlpatterns = [
     path('api/templates/', include('apps.templates.urls')),
     path('api/themes/', include('apps.themes.urls')),
     path('api/activity/', include('apps.activity.urls')),
+    path('api/', api_root, name='api_root'),  # Generic API root - must come last
 ]
 
 # Serve media files during development

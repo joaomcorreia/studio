@@ -74,6 +74,36 @@ export class MagicAI {
   }
 
   /**
+   * Generate services list using AI
+   */
+  static async generateServices(
+    businessName: string, 
+    industry?: string, 
+    count: number = 3
+  ): Promise<AIGenerationResponse> {
+    return this.generateContent({
+      businessName,
+      industry,
+      contentType: 'services',
+      existingContent: `Generate ${count} services for a ${industry} business`
+    })
+  }
+
+  /**
+   * Generate tagline using AI
+   */
+  static async generateTagline(
+    businessName: string, 
+    industry?: string
+  ): Promise<AIGenerationResponse> {
+    return this.generateContent({
+      businessName,
+      industry,
+      contentType: 'tagline'
+    })
+  }
+
+  /**
    * Generate image prompts for business visuals
    * TODO: Implement DALL-E integration
    */
@@ -89,6 +119,26 @@ export class MagicAI {
     }
     
     return prompts[style]
+  }
+
+  /**
+   * Generate image using DALL-E API (placeholder implementation)
+   */
+  static async generateImage(
+    prompt: string,
+    size: '256x256' | '512x512' | '1024x1024' = '1024x1024'
+  ): Promise<{success: boolean, imageUrl?: string, error?: string}> {
+    try {
+      // In a real implementation, this would call the DALL-E API
+      console.log('Generating image with prompt:', prompt)
+      
+      // For now, return a placeholder image
+      const placeholderUrl = `https://source.unsplash.com/${size.replace('x', 'x')}/?${encodeURIComponent(prompt)}&sig=${Math.random()}`
+      
+      return { success: true, imageUrl: placeholderUrl }
+    } catch (error) {
+      return { success: false, error: 'Image generation failed' }
+    }
   }
 
   /**

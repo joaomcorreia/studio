@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'apps.tenants',
     'apps.users',
     'apps.core',
+    'apps.auth',  # Authentication app with JWT endpoints
     'apps.onboarding',
     'apps.pages',
     'apps.sections',
@@ -58,7 +59,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    'apps.core.middleware.CSRFExemptMiddleware',  # Custom CSRF middleware for API exemptions
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -148,4 +149,9 @@ CORS_ALLOWED_HEADERS = [
     'user-agent',
     'x-csrftoken',
     'x-requested-with',
+]
+
+# CSRF exemption for API endpoints
+CSRF_EXEMPT_URLS = [
+    r'^/api/',  # Exempt all API endpoints from CSRF verification
 ]
