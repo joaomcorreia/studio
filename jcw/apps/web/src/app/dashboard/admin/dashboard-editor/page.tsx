@@ -18,103 +18,228 @@ interface DashboardComponent {
   content?: string
 }
 
+type PlanType = 'basic' | 'starter' | 'premium' | 'pro'
+
 export default function DashboardEditorPage() {
   const [components, setComponents] = useState<DashboardComponent[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [previewMode, setPreviewMode] = useState(false)
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+  const [selectedPlan, setSelectedPlan] = useState<PlanType>('basic')
 
   useEffect(() => {
     loadDashboardComponents()
-  }, [])
+  }, [selectedPlan])
 
   const loadDashboardComponents = async () => {
     try {
       // In a real app, this would fetch from your API
-      // Mock data representing the actual user dashboard structure
-      const mockComponents: DashboardComponent[] = [
-        {
-          id: '1',
-          type: 'notice-banner',
-          title: 'Development Mode',
-          description: 'This dashboard shows mock data when API endpoints are not available. Perfect for frontend development!',
-          icon: 'info',
-          status: 'published',
-          order: 1,
-          isVisible: true,
-          backgroundColor: 'bg-blue-50 border-blue-200',
-          textColor: 'text-blue-800'
-        },
-        {
-          id: '2',
-          type: 'site-overview',
-          title: 'Your Development Site',
-          description: 'Main site information and quick actions',
-          icon: 'globe',
-          status: 'published',
-          order: 2,
-          isVisible: true
-        },
-        {
-          id: '3',
-          type: 'stats-grid',
-          title: 'Site Statistics',
-          description: 'Overview of pages, published content, and drafts',
-          icon: 'chart-bar',
-          status: 'published',
-          order: 3,
-          isVisible: true
-        },
-        {
-          id: '4',
-          type: 'getting-started',
-          title: 'Getting Started Guide',
-          description: 'Step-by-step guide for new users',
-          icon: 'academic-cap',
-          status: 'published',
-          order: 4,
-          isVisible: true
-        },
-        {
-          id: '5',
-          type: 'pages-grid',
-          title: 'Your Pages',
-          description: 'Manage and edit your website pages',
-          icon: 'document-text',
-          status: 'published',
-          order: 5,
-          isVisible: true
-        },
-        {
-          id: '6',
-          type: 'quick-action',
-          title: 'Content Strategy',
-          description: 'Define your target audience, key messaging, and calls-to-action',
-          icon: 'heart',
-          href: '/dashboard/user/content-strategy',
-          buttonText: 'Manage Content',
-          status: 'draft',
-          order: 6,
-          isVisible: false
-        },
-        {
-          id: '7',
-          type: 'quick-action',
-          title: 'Advanced Analytics',
-          description: 'Get detailed insights about your website performance',
-          icon: 'chart-line',
-          href: '/dashboard/user/analytics',
-          buttonText: 'View Analytics',
-          status: 'draft',
-          order: 7,
-          isVisible: false
-        }
-      ]
+      // Load different components based on selected plan
+      const mockComponents: DashboardComponent[] = getPlanComponents(selectedPlan)
       setComponents(mockComponents)
     } catch (error) {
       console.error('Failed to load dashboard components:', error)
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const getPlanComponents = (plan: PlanType): DashboardComponent[] => {
+    const baseComponents: DashboardComponent[] = [
+      {
+        id: '1',
+        type: 'notice-banner',
+        title: 'Development Mode',
+        description: `This shows the ${plan.charAt(0).toUpperCase() + plan.slice(1)} plan dashboard. Mock data is shown when API endpoints are not available.`,
+        icon: 'info',
+        status: 'published',
+        order: 1,
+        isVisible: true,
+        backgroundColor: 'bg-blue-50 border-blue-200',
+        textColor: 'text-blue-800'
+      },
+      {
+        id: '2',
+        type: 'site-overview',
+        title: `Your ${plan.charAt(0).toUpperCase() + plan.slice(1)} Site`,
+        description: 'Main site information and quick actions',
+        icon: 'globe',
+        status: 'published',
+        order: 2,
+        isVisible: true
+      },
+      {
+        id: '3',
+        type: 'stats-grid',
+        title: 'Site Statistics',
+        description: 'Overview of pages, published content, and drafts',
+        icon: 'chart-bar',
+        status: 'published',
+        order: 3,
+        isVisible: true
+      },
+      {
+        id: '4',
+        type: 'getting-started',
+        title: 'Getting Started Guide',
+        description: 'Step-by-step guide for new users',
+        icon: 'academic-cap',
+        status: 'published',
+        order: 4,
+        isVisible: true
+      }
+    ]
+
+    // Add plan-specific components
+    switch (plan) {
+      case 'basic':
+        return [
+          ...baseComponents,
+          {
+            id: '5',
+            type: 'quick-action',
+            title: 'Create First Page',
+            description: 'Start building your website with a simple page',
+            icon: 'document-text',
+            href: '/dashboard/user/pages/new',
+            buttonText: 'Create Page',
+            status: 'published',
+            order: 5,
+            isVisible: true
+          }
+        ]
+      
+      case 'starter':
+        return [
+          ...baseComponents,
+          {
+            id: '5',
+            type: 'pages-grid',
+            title: 'Your Pages',
+            description: 'Manage and edit your website pages',
+            icon: 'document-text',
+            status: 'published',
+            order: 5,
+            isVisible: true
+          },
+          {
+            id: '6',
+            type: 'quick-action',
+            title: 'SEO Tools',
+            description: 'Optimize your website for search engines',
+            icon: 'eye',
+            href: '/dashboard/user/seo',
+            buttonText: 'Optimize SEO',
+            status: 'published',
+            order: 6,
+            isVisible: true
+          }
+        ]
+      
+      case 'premium':
+        return [
+          ...baseComponents,
+          {
+            id: '5',
+            type: 'pages-grid',
+            title: 'Your Pages',
+            description: 'Manage and edit your website pages',
+            icon: 'document-text',
+            status: 'published',
+            order: 5,
+            isVisible: true
+          },
+          {
+            id: '6',
+            type: 'quick-action',
+            title: 'Content Strategy',
+            description: 'Define your target audience, key messaging, and calls-to-action',
+            icon: 'heart',
+            href: '/dashboard/user/content-strategy',
+            buttonText: 'Manage Content',
+            status: 'published',
+            order: 6,
+            isVisible: true
+          },
+          {
+            id: '7',
+            type: 'quick-action',
+            title: 'Analytics Dashboard',
+            description: 'Track your website performance and visitor insights',
+            icon: 'chart-line',
+            href: '/dashboard/user/analytics',
+            buttonText: 'View Analytics',
+            status: 'published',
+            order: 7,
+            isVisible: true
+          }
+        ]
+        
+      case 'pro':
+        return [
+          ...baseComponents,
+          {
+            id: '5',
+            type: 'pages-grid',
+            title: 'Your Pages',
+            description: 'Manage and edit your website pages',
+            icon: 'document-text',
+            status: 'published',
+            order: 5,
+            isVisible: true
+          },
+          {
+            id: '6',
+            type: 'quick-action',
+            title: 'Content Strategy',
+            description: 'Define your target audience, key messaging, and calls-to-action',
+            icon: 'heart',
+            href: '/dashboard/user/content-strategy',
+            buttonText: 'Manage Content',
+            status: 'published',
+            order: 6,
+            isVisible: true
+          },
+          {
+            id: '7',
+            type: 'quick-action',
+            title: 'Advanced Analytics',
+            description: 'Get detailed insights about your website performance',
+            icon: 'chart-line',
+            href: '/dashboard/user/analytics',
+            buttonText: 'View Analytics',
+            status: 'published',
+            order: 7,
+            isVisible: true
+          },
+          {
+            id: '8',
+            type: 'quick-action',
+            title: 'E-commerce Tools',
+            description: 'Advanced e-commerce features and integrations',
+            icon: 'credit-card',
+            href: '/dashboard/user/ecommerce',
+            buttonText: 'Manage Store',
+            status: 'published',
+            order: 8,
+            isVisible: true
+          },
+          {
+            id: '9',
+            type: 'quick-action',
+            title: 'Custom Integrations',
+            description: 'Connect with third-party services and APIs',
+            icon: 'settings',
+            href: '/dashboard/user/integrations',
+            buttonText: 'Manage Integrations',
+            status: 'published',
+            order: 9,
+            isVisible: true
+          }
+        ]
+        
+      default:
+        return baseComponents
     }
   }
 
@@ -212,10 +337,26 @@ export default function DashboardEditorPage() {
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Dashboard Editor</h1>
             <p className="text-gray-600 mt-2">
-              Edit the user dashboard that appears at <strong>/dashboard/user</strong>. Use Preview Mode to see exactly how it will look to users, then publish your changes to update all user dashboards.
+              Edit user dashboards by subscription plan. Select a plan above to customize the dashboard components that users with that plan will see at <strong>/dashboard/user</strong>. Use Preview Mode to see exactly how it will look to users.
             </p>
           </div>
           <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2">
+              <label htmlFor="plan-select" className="text-sm font-medium text-gray-700">
+                Editing Plan:
+              </label>
+              <select
+                id="plan-select"
+                value={selectedPlan}
+                onChange={(e) => setSelectedPlan(e.target.value as PlanType)}
+                className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="basic">Basic</option>
+                <option value="starter">Starter</option>
+                <option value="premium">Premium</option>
+                <option value="pro">Pro</option>
+              </select>
+            </div>
             <button
               onClick={() => setPreviewMode(!previewMode)}
               className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
