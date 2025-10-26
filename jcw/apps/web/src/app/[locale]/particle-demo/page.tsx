@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { ParticleNetwork, ParticleHeader, AnimatedSection } from '../../components/effects';
+import { ParticleNetwork, ParticleHeader, AnimatedSection } from '../../../components/effects';
 
 export default function ParticleDemo() {
   return (

@@ -1,3 +1,3 @@
 @echo off
 cd /d "C:\projects\studio\jcw\apps\web"
-npm run dev
+npx next dev -p 3001

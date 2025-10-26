@@ -1,0 +1,91 @@
+{
+  "common": {
+    "loading": "Chargement...",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "create": "Créer",
+    "search": "Chercher",
+    "back": "Retour",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "submit": "Soumettre",
+    "close": "Fermer",
+    "confirm": "Confirmer",
+    "yes": "Oui",
+    "no": "Non"
+  },
+  "navigation": {
+    "home": "Accueil",
+    "about": "À propos",
+    "services": "Services",
+    "portfolio": "Portfolio",
+    "contact": "Contact",
+    "blog": "Blog",
+    "dashboard": "Tableau de bord"
+  },
+  "auth": {
+    "login": "Se connecter",
+    "logout": "Se déconnecter",
+    "register": "S'inscrire",
+    "email": "E-mail",
+    "password": "Mot de passe",
+    "confirmPassword": "Confirmer le mot de passe",
+    "forgotPassword": "Mot de passe oublié ?",
+    "rememberMe": "Se souvenir de moi",
+    "loginError": "E-mail ou mot de passe invalide",
+    "loginSuccess": "Bon retour !",
+    "logoutSuccess": "Vous avez été déconnecté"
+  },
+  "dashboard": {
+    "welcome": "Bienvenue dans le tableau de bord",
+    "overview": "Aperçu",
+    "analytics": "Analyses",
+    "settings": "Paramètres",
+    "profile": "Profil",
+    "users": "Utilisateurs",
+    "templates": "Modèles",
+    "sections": "Sections",
+    "pages": "Pages",
+    "media": "Médias"
+  },
+  "admin": {
+    "title": "Panneau d'administration",
+    "manageTemplates": "Gérer les modèles",
+    "manageSections": "Gérer les sections",
+    "manageUsers": "Gérer les utilisateurs",
+    "createTemplate": "Créer un modèle",
+    "editTemplate": "Modifier le modèle",
+    "templateName": "Nom du modèle",
+    "templateDescription": "Description du modèle",
+    "templateCreated": "Modèle créé avec succès",
+    "templateUpdated": "Modèle mis à jour avec succès",
+    "templateDeleted": "Modèle supprimé avec succès",
+    "confirmDelete": "Êtes-vous sûr de vouloir supprimer cet élément ?",
+    "noTemplates": "Aucun modèle trouvé",
+    "noSections": "Aucune section trouvée",
+    "noUsers": "Aucun utilisateur trouvé"
+  },
+  "forms": {
+    "required": "Ce champ est obligatoire",
+    "emailInvalid": "Veuillez saisir une adresse e-mail valide",
+    "passwordTooShort": "Le mot de passe doit contenir au moins 8 caractères",
+    "passwordMismatch": "Les mots de passe ne correspondent pas",
+    "nameRequired": "Le nom est obligatoire",
+    "descriptionRequired": "La description est obligatoire"
+  },
+  "errors": {
+    "general": "Une erreur s'est produite. Veuillez réessayer.",
+    "network": "Erreur réseau. Veuillez vérifier votre connexion.",
+    "unauthorized": "Vous n'êtes pas autorisé à accéder à cette ressource.",
+    "notFound": "La ressource demandée n'a pas été trouvée.",
+    "serverError": "Erreur serveur. Veuillez réessayer plus tard."
+  },
+  "success": {
+    "saved": "Modifications enregistrées avec succès",
+    "created": "Élément créé avec succès",
+    "updated": "Élément mis à jour avec succès",
+    "deleted": "Élément supprimé avec succès"
+  }
+}

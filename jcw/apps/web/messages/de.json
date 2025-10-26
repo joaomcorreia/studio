@@ -1,0 +1,91 @@
+{
+  "common": {
+    "loading": "Wird geladen...",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "create": "Erstellen",
+    "search": "Suchen",
+    "back": "Zurück",
+    "next": "Weiter",
+    "previous": "Zurück",
+    "submit": "Senden",
+    "close": "Schließen",
+    "confirm": "Bestätigen",
+    "yes": "Ja",
+    "no": "Nein"
+  },
+  "navigation": {
+    "home": "Startseite",
+    "about": "Über uns",
+    "services": "Dienstleistungen",
+    "portfolio": "Portfolio",
+    "contact": "Kontakt",
+    "blog": "Blog",
+    "dashboard": "Dashboard"
+  },
+  "auth": {
+    "login": "Anmelden",
+    "logout": "Abmelden",
+    "register": "Registrieren",
+    "email": "E-Mail",
+    "password": "Passwort",
+    "confirmPassword": "Passwort bestätigen",
+    "forgotPassword": "Passwort vergessen?",
+    "rememberMe": "Angemeldet bleiben",
+    "loginError": "Ungültige E-Mail oder Passwort",
+    "loginSuccess": "Willkommen zurück!",
+    "logoutSuccess": "Sie wurden abgemeldet"
+  },
+  "dashboard": {
+    "welcome": "Willkommen im Dashboard",
+    "overview": "Übersicht",
+    "analytics": "Analytics",
+    "settings": "Einstellungen",
+    "profile": "Profil",
+    "users": "Benutzer",
+    "templates": "Vorlagen",
+    "sections": "Abschnitte",
+    "pages": "Seiten",
+    "media": "Medien"
+  },
+  "admin": {
+    "title": "Admin-Panel",
+    "manageTemplates": "Vorlagen verwalten",
+    "manageSections": "Abschnitte verwalten",
+    "manageUsers": "Benutzer verwalten",
+    "createTemplate": "Vorlage erstellen",
+    "editTemplate": "Vorlage bearbeiten",
+    "templateName": "Vorlagenname",
+    "templateDescription": "Vorlagenbeschreibung",
+    "templateCreated": "Vorlage erfolgreich erstellt",
+    "templateUpdated": "Vorlage erfolgreich aktualisiert",
+    "templateDeleted": "Vorlage erfolgreich gelöscht",
+    "confirmDelete": "Sind Sie sicher, dass Sie dieses Element löschen möchten?",
+    "noTemplates": "Keine Vorlagen gefunden",
+    "noSections": "Keine Abschnitte gefunden",
+    "noUsers": "Keine Benutzer gefunden"
+  },
+  "forms": {
+    "required": "Dieses Feld ist erforderlich",
+    "emailInvalid": "Bitte geben Sie eine gültige E-Mail-Adresse ein",
+    "passwordTooShort": "Das Passwort muss mindestens 8 Zeichen lang sein",
+    "passwordMismatch": "Die Passwörter stimmen nicht überein",
+    "nameRequired": "Name ist erforderlich",
+    "descriptionRequired": "Beschreibung ist erforderlich"
+  },
+  "errors": {
+    "general": "Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
+    "network": "Netzwerkfehler. Bitte überprüfen Sie Ihre Verbindung.",
+    "unauthorized": "Sie sind nicht berechtigt, auf diese Ressource zuzugreifen.",
+    "notFound": "Die angeforderte Ressource wurde nicht gefunden.",
+    "serverError": "Serverfehler. Bitte versuchen Sie es später erneut."
+  },
+  "success": {
+    "saved": "Änderungen erfolgreich gespeichert",
+    "created": "Element erfolgreich erstellt",
+    "updated": "Element erfolgreich aktualisiert",
+    "deleted": "Element erfolgreich gelöscht"
+  }
+}

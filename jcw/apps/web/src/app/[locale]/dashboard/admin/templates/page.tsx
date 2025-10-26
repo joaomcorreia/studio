@@ -1,12 +1,16 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { templateService, Template, TemplateStats } from '@/services/templateService'
 import TemplateUploadModal from '@/components/admin/TemplateUploadModal'
 import TemplateEditModal from '@/components/admin/TemplateEditModal'
 import TemplateDeleteModal from '@/components/admin/TemplateDeleteModal'
 
 export default function TemplatesPage() {
+  const t = useTranslations('admin');
+  const tCommon = useTranslations('common');
+  const tDashboard = useTranslations('dashboard');
   const [templates, setTemplates] = useState<Template[]>([])
   const [stats, setStats] = useState<TemplateStats | null>(null)
   const [loading, setLoading] = useState(true)
@@ -192,7 +196,7 @@ export default function TemplatesPage() {
     <div className="p-8">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Website Templates</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('manageTemplates')}</h1>
           <p className="mt-1 text-sm text-gray-500">
             Manage and create website templates for different industries
           </p>
@@ -201,7 +205,7 @@ export default function TemplatesPage() {
           onClick={() => setShowUploadModal(true)}
           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
         >
-          Create New Template
+          {t('createTemplate')}
         </button>
       </div>
 

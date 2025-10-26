@@ -197,7 +197,7 @@ class ContentIndexer {
   getContentForAssistant(): string {
     let fullContent = ''
     
-    for (const [path, content] of this.contentCache.entries()) {
+    for (const [path, content] of Array.from(this.contentCache.entries())) {
       fullContent += `\n\nPage: ${content.title} (${path})\n`
       fullContent += `Description: ${content.description}\n`
       fullContent += `Content: ${content.content}\n`

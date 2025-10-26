@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { AnimatedSection, HoverEffect, ParallaxEffect, LoadingEffect, ClickEffect } from '../../components/effects';
+import { AnimatedSection, HoverEffect, ParallaxEffect, LoadingEffect, ClickEffect } from '../../../components/effects';
 
 export default function EffectsDemo() {
   const [isLoading, setIsLoading] = useState(false);
