@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 
 interface Tenant {
   id: number
@@ -30,31 +31,52 @@ export default function AdminDashboard() {
     total_templates: 0
   })
   const [loading, setLoading] = useState(true)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const router = useRouter()
 
   useEffect(() => {
-    fetchDashboardData()
+    checkAuthentication()
   }, [])
+
+  const checkAuthentication = () => {
+    const token = localStorage.getItem('access_token')
+    if (!token) {
+      router.push('/dashboard/admin/login')
+      return
+    }
+    setIsAuthenticated(true)
+    fetchDashboardData()
+  }
 
   const fetchDashboardData = async () => {
     try {
-      // Fetch stats
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api'
+      const token = localStorage.getItem('access_token')
       
-      const statsResponse = await fetch(`${apiUrl}/admin/stats/`)
+      const headers = {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+      
+      // Fetch stats
+      const statsResponse = await fetch(`${apiUrl}/admin/stats/`, { headers })
       if (statsResponse.ok) {
         const statsData = await statsResponse.json()
         setStats(statsData)
+      } else if (statsResponse.status === 401) {
+        router.push('/dashboard/admin/login')
+        return
       }
 
       // Fetch tenants
-      const tenantsResponse = await fetch(`${apiUrl}/admin/tenants/`)
+      const tenantsResponse = await fetch(`${apiUrl}/admin/tenants/`, { headers })
       if (tenantsResponse.ok) {
         const tenantsData = await tenantsResponse.json()
         setTenants(tenantsData.results || tenantsData)
       }
 
       // Fetch recent activity
-      const activityResponse = await fetch(`${apiUrl}/admin/activity/?limit=10`)
+      const activityResponse = await fetch(`${apiUrl}/admin/activity/?limit=10`, { headers })
       if (activityResponse.ok) {
         const activityData = await activityResponse.json()
         setActivities(activityData.results || activityData)
@@ -69,9 +91,12 @@ export default function AdminDashboard() {
   const toggleTenantStatus = async (tenantId: number, currentStatus: boolean) => {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api'
+      const token = localStorage.getItem('access_token')
+      
       const response = await fetch(`${apiUrl}/admin/tenants/${tenantId}/`, {
         method: 'PATCH',
         headers: {
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ is_active: !currentStatus })
@@ -79,13 +104,15 @@ export default function AdminDashboard() {
 
       if (response.ok) {
         fetchDashboardData() // Refresh data
+      } else if (response.status === 401) {
+        router.push('/dashboard/admin/login')
       }
     } catch (error) {
       console.error('Failed to update tenant status:', error)
     }
   }
 
-  if (loading) {
+  if (!isAuthenticated || loading) {
     return (
       <div className="max-w-7xl mx-auto py-6 px-4">
         <div className="animate-pulse">

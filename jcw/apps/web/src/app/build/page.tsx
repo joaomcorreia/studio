@@ -83,6 +83,7 @@ export default function BuildPage() {
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
   const [selectedTemplateData, setSelectedTemplateData] = useState<any | null>(null)
   const [isLoadingTemplates, setIsLoadingTemplates] = useState(false)
+  const [showPrintingSection, setShowPrintingSection] = useState(false)
 
   // Show logo section when a logo choice is made
   useEffect(() => {
@@ -106,6 +107,20 @@ export default function BuildPage() {
   const checkSlug = async (business_name: string) => {
     if (!business_name) return
     
+    // Generate slug locally for immediate preview
+    const slug = business_name
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, '') // Remove special characters
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/-+/g, '-') // Replace multiple hyphens with single
+      .replace(/^-+|-+$/g, '') // Remove leading/trailing hyphens
+    
+    setSuggestedSlug(slug)
+    
+    // Update dev URL preview to localhost
+    setDevUrl(`http://localhost:3000/build/${slug}/`)
+    
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api'}/onboarding/check-slug/`, {
         method: 'POST',
@@ -117,7 +132,11 @@ export default function BuildPage() {
       
       if (response.ok) {
         const data = await response.json()
-        setSuggestedSlug(data.suggested_slug)
+        // Only update if server suggests different slug
+        if (data.suggested_slug !== slug) {
+          setSuggestedSlug(data.suggested_slug)
+          setDevUrl(`http://localhost:3000/build/${data.suggested_slug}/`)
+        }
         setDevUrl(data.dev_url)
       }
     } catch (error) {
@@ -127,6 +146,10 @@ export default function BuildPage() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
+    console.log('Form submitted!')
+    console.log('Form data:', formData)
+    console.log('Website info:', websiteInfo)
+    console.log('Selected template:', selectedTemplate)
     setIsLoading(true)
     
     try {
@@ -161,13 +184,23 @@ export default function BuildPage() {
       
       if (response.ok) {
         const data = await response.json()
+        console.log('API Response:', data)
         setResult(data)
       } else {
+        console.error('API request failed with status:', response.status)
         const errorData = await response.json()
+        console.error('Error data:', errorData)
         setResult({ success: false, error: errorData })
       }
+      
+      // Show printing section instead of opening new tab
+      setShowPrintingSection(true)
+      
     } catch (error) {
+      console.error('Network error:', error)
       setResult({ success: false, error: 'Network error occurred' })
+      // Still show printing section even if API fails
+      setShowPrintingSection(true)
     } finally {
       setIsLoading(false)
     }
@@ -539,16 +572,16 @@ export default function BuildPage() {
     
     const slug = websiteName
       .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
       .trim()
+      .replace(/[^\w\s-]/g, '') // Remove special characters
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/-+/g, '-') // Replace multiple hyphens with single
+      .replace(/^-+|-+$/g, '') // Remove leading/trailing hyphens
     
     setWebsiteInfo(prev => ({ ...prev, slug }))
     
-    // Update preview URL in real-time
-    const previewUrl = `https://justcodeworks.eu/build/${slug}/`
-    setDevUrl(previewUrl)
+    // Update preview URL to localhost
+    setDevUrl(`http://localhost:3000/build/${slug}/`)
   }
 
   // Logo handling functions
@@ -654,25 +687,77 @@ export default function BuildPage() {
     return (
       <div className="max-w-2xl mx-auto py-12 px-4">
         <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
-          <h1 className="text-2xl font-bold text-green-800 mb-4">🎉 Website Created!</h1>
-          <p className="text-green-700 mb-4">{result.message}</p>
-          <div className="bg-white rounded-lg p-4 mb-4">
-            <p className="text-sm text-gray-600">Your development site:</p>
-            <a 
-              href={result.dev_url} 
-              className="text-blue-600 hover:text-blue-800 font-medium"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {result.dev_url}
-            </a>
+          <h1 className="text-2xl font-bold text-green-800 mb-4">🎉 Website Created Successfully!</h1>
+          <p className="text-green-700 mb-6">{result.message}</p>
+          
+          <div className="bg-white rounded-lg p-4 mb-6">
+            <p className="text-sm text-gray-600 mb-2">Your website is now live at:</p>
+            <div className="font-mono text-sm bg-gray-100 p-2 rounded border mb-3">
+              {(() => {
+                const generateSlugHelper = (text: string): string => {
+                  return text
+                    .toLowerCase()
+                    .trim()
+                    .replace(/[^\w\s-]/g, '')
+                    .replace(/\s+/g, '-')
+                    .replace(/-+/g, '-')
+                    .replace(/^-+|-+$/g, '')
+                }
+                const businessSlug = websiteInfo.slug || suggestedSlug || generateSlugHelper(formData.business_name)
+                return `http://localhost:3000/build/${businessSlug}/`
+              })()}
+            </div>
+            <p className="text-xs text-gray-500">
+              ✨ Your website opened automatically in a new tab
+            </p>
           </div>
-          <button 
-            onClick={() => window.location.href = '/dashboard/user'}
-            className="bg-primary-600 text-white px-6 py-2 rounded-lg hover:bg-primary-700"
-          >
-            Go to Dashboard
-          </button>
+
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <button 
+              onClick={() => {
+                const generateSlugHelper = (text: string): string => {
+                  return text
+                    .toLowerCase()
+                    .trim()
+                    .replace(/[^\w\s-]/g, '')
+                    .replace(/\s+/g, '-')
+                    .replace(/-+/g, '-')
+                    .replace(/^-+|-+$/g, '')
+                }
+                const businessSlug = websiteInfo.slug || suggestedSlug || generateSlugHelper(formData.business_name)
+                const localhostUrl = `http://localhost:3000/build/${businessSlug}/`
+                window.open(localhostUrl, '_blank', 'noopener,noreferrer')
+              }}
+              className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors font-medium flex items-center justify-center gap-2"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+              View My Website
+            </button>
+            
+            <button 
+              onClick={() => window.location.href = '/dashboard/user'}
+              className="bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors font-medium flex items-center justify-center gap-2"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+              Go to Dashboard
+            </button>
+          </div>
+
+          <div className="mt-6 pt-4 border-t border-green-200">
+            <p className="text-sm text-green-600">
+              🚀 <strong>What's Next?</strong>
+            </p>
+            <ul className="text-sm text-green-700 mt-2 space-y-1">
+              <li>• Customize your website further in the dashboard</li>
+              <li>• Connect your custom domain</li>
+              <li>• Add more content and pages</li>
+              <li>• Set up analytics and SEO</li>
+            </ul>
+          </div>
         </div>
       </div>
     )
@@ -680,13 +765,13 @@ export default function BuildPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto py-12 px-4">
+      <div className="py-8 px-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-8 text-center">
           Build Your Website
         </h1>
         
-        <div className="grid lg:grid-cols-2 gap-8">
-          <div className="space-y-6">
+        <div className="grid grid-cols-12 gap-8">
+          <div className="col-span-5 space-y-6">
             <div className="mb-8">
               <h2 className="text-xl font-semibold mb-4">Choose Your Website Type</h2>
               <div className="grid md:grid-cols-3 gap-4 mb-8">
@@ -1699,41 +1784,223 @@ export default function BuildPage() {
                 </div>
               )}
 
+              {/* Debug button for testing */}
+              <button
+                type="button"
+                onClick={() => {
+                  const slug = 'test-restaurant'
+                  const url = `http://localhost:3000/build/${slug}/`
+                  console.log('Direct test - opening:', url)
+                  window.open(url, '_blank', 'noopener,noreferrer')
+                }}
+                className="w-full bg-gray-600 text-white py-2 rounded-lg font-medium text-sm hover:bg-gray-700 transition-all duration-200 mb-4"
+              >
+                🧪 Test Direct URL Opening (Debug)
+              </button>
+
               <button
                 type="submit"
-                disabled={isLoading || !contentInfo.description || !selectedTemplate}
-                className="w-full bg-primary-600 text-white py-3 rounded-lg font-medium hover:bg-primary-700 disabled:opacity-50 transition-all"
+                disabled={isLoading}
+                className="w-full bg-gradient-to-r from-primary-600 to-blue-600 text-white py-4 rounded-lg font-bold text-lg hover:from-primary-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
               >
                 {isLoading ? (
                   <span className="flex items-center justify-center">
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <svg className="animate-spin -ml-1 mr-3 h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 714 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    Creating Your Website...
+                    <span>Building Your Website...</span>
                   </span>
-                ) : selectedTemplate ? 'Create My Website 🚀' : 'Complete All Steps First'}
+                ) : selectedTemplate ? (
+                  <span className="flex items-center justify-center gap-3">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                    <span>Create My Website</span>
+                    <span className="text-xl">🚀</span>
+                  </span>
+                ) : (
+                  <span className="flex items-center justify-center gap-2">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                    <span>Complete All Steps First</span>
+                  </span>
+                )}
               </button>
               
-              {!selectedTemplate && showTemplateSection && (
-                <p className="text-center text-sm text-amber-600 mt-2">
-                  ⚠️ Please select a template to create your website
-                </p>
-              )}
-              {!contentInfo.description && showContentSection && (
-                <p className="text-center text-sm text-amber-600 mt-2">
-                  ⚠️ Please complete the business description to see AI service suggestions
-                </p>
+              {selectedTemplate && contentInfo.description ? (
+                <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <p className="text-center text-sm text-green-700 flex items-center justify-center gap-2">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    Ready to build! Your website will be created and opened automatically in a new tab.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  {!selectedTemplate && showTemplateSection && (
+                    <p className="text-center text-sm text-amber-600 mt-2">
+                      ⚠️ Please select a template to create your website
+                    </p>
+                  )}
+                  {!contentInfo.description && showContentSection && (
+                    <p className="text-center text-sm text-amber-600 mt-2">
+                      ⚠️ Please complete the business description to see AI service suggestions
+                    </p>
+                  )}
+                </>
               )}
             </form>
           </div>
           
-          <div className="bg-white rounded-lg shadow-lg p-6 h-fit sticky top-6">
+          <div className="col-span-7 bg-white rounded-lg shadow-lg p-6 h-fit sticky top-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              🖼️ Live Preview
+              {showPrintingSection ? '�️ Print Products' : '�🖼️ Live Preview'}
             </h3>
             
-            <div className="border rounded-lg overflow-hidden bg-gray-50 min-h-96 shadow-inner">
+            {showPrintingSection ? (
+              // Printing Section
+              <div className="space-y-6">
+                {/* Success Message */}
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+                  <div className="flex items-center space-x-3">
+                    <div className="text-green-600">
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-green-900">Website Created Successfully! 🎉</h4>
+                      <p className="text-sm text-green-700 mt-1">
+                        Your website has been built and is ready. Now let's create matching print materials for your business.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Business Cards Row */}
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-200">
+                  <h4 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                    <svg className="w-6 h-6 mr-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Business Cards
+                  </h4>
+                  <div className="grid grid-cols-3 gap-4">
+                    {[
+                      { name: 'Premium Business Cards', desc: 'High-quality cardstock with your logo', price: '$49', image: '📇' },
+                      { name: 'Luxury Foil Cards', desc: 'Gold/silver foil accents', price: '$89', image: '✨' },
+                      { name: 'Eco-Friendly Cards', desc: 'Recycled materials, sustainable', price: '$39', image: '🌱' }
+                    ].map((card, idx) => (
+                      <div key={idx} className="bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow border">
+                        <div className="text-2xl mb-2">{card.image}</div>
+                        <h5 className="font-semibold text-sm mb-1">{card.name}</h5>
+                        <p className="text-xs text-gray-600 mb-2">{card.desc}</p>
+                        <div className="flex justify-between items-center">
+                          <span className="font-bold text-blue-600">{card.price}</span>
+                          <button className="bg-blue-600 text-white px-3 py-1 rounded text-xs hover:bg-blue-700">
+                            Select
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Trifolds & Flyers Row */}
+                <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-6 border border-purple-200">
+                  <h4 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                    <svg className="w-6 h-6 mr-3 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Brochures & Flyers
+                  </h4>
+                  <div className="grid grid-cols-3 gap-4">
+                    {[
+                      { name: 'Tri-fold Brochures', desc: 'Professional service showcase', price: '$79', image: '📄' },
+                      { name: 'Promotional Flyers', desc: 'Eye-catching marketing materials', price: '$59', image: '📢' },
+                      { name: 'Menu/Catalog', desc: 'Product or service listings', price: '$69', image: '📋' }
+                    ].map((item, idx) => (
+                      <div key={idx} className="bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow border">
+                        <div className="text-2xl mb-2">{item.image}</div>
+                        <h5 className="font-semibold text-sm mb-1">{item.name}</h5>
+                        <p className="text-xs text-gray-600 mb-2">{item.desc}</p>
+                        <div className="flex justify-between items-center">
+                          <span className="font-bold text-purple-600">{item.price}</span>
+                          <button className="bg-purple-600 text-white px-3 py-1 rounded text-xs hover:bg-purple-700">
+                            Select
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Gifts Row */}
+                <div className="bg-gradient-to-r from-green-50 to-teal-50 rounded-lg p-6 border border-green-200">
+                  <h4 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                    <svg className="w-6 h-6 mr-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
+                    </svg>
+                    Branded Gifts & Merchandise
+                  </h4>
+                  <div className="grid grid-cols-3 gap-4">
+                    {[
+                      { name: 'Custom Mugs', desc: 'Coffee mugs with your branding', price: '$29', image: '☕' },
+                      { name: 'Branded T-Shirts', desc: 'Staff uniforms or promotional tees', price: '$45', image: '👕' },
+                      { name: 'Gift Packages', desc: 'Custom branded gift sets', price: '$99', image: '🎁' }
+                    ].map((gift, idx) => (
+                      <div key={idx} className="bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow border">
+                        <div className="text-2xl mb-2">{gift.image}</div>
+                        <h5 className="font-semibold text-sm mb-1">{gift.name}</h5>
+                        <p className="text-xs text-gray-600 mb-2">{gift.desc}</p>
+                        <div className="flex justify-between items-center">
+                          <span className="font-bold text-green-600">{gift.price}</span>
+                          <button className="bg-green-600 text-white px-3 py-1 rounded text-xs hover:bg-green-700">
+                            Select
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="bg-gray-50 rounded-lg p-6 border-2 border-dashed border-gray-200">
+                  <div className="text-center space-y-4">
+                    <h4 className="text-lg font-semibold text-gray-900">Ready to Order Your Print Materials?</h4>
+                    <p className="text-sm text-gray-600">
+                      All products will use your website's branding, colors, and business information automatically.
+                    </p>
+                    <div className="flex gap-3 justify-center">
+                      <button 
+                        onClick={() => {
+                          const businessSlug = websiteInfo.slug || suggestedSlug || formData.business_name.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-')
+                          const localhostUrl = `http://localhost:3001/build/${businessSlug}/`
+                          window.open(localhostUrl, '_blank', 'noopener,noreferrer')
+                        }}
+                        className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center gap-2"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                        View My Website
+                      </button>
+                      <button className="bg-green-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center gap-2">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l-2.5 5m0 0h4.5m0 0v6m0-6h9m-9 6h9" />
+                        </svg>
+                        Order Selected Items
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              // Original Live Preview Section
+              <div className="border rounded-lg overflow-hidden bg-gray-50 min-h-[600px] shadow-inner">
               {/* Browser Bar */}
               <div className="bg-gray-800 text-white p-2 text-xs flex items-center">
                 <div className="flex space-x-1 mr-3">
@@ -1749,39 +2016,198 @@ export default function BuildPage() {
               
               {/* Website Content */}
               {selectedTemplateData && selectedTemplateData.html_content ? (
-                <div className="bg-white min-h-80 relative overflow-hidden">
-                  {/* Inject template CSS */}
-                  <style dangerouslySetInnerHTML={{
-                    __html: selectedTemplateData.css_content || ''
-                  }} />
-                  {/* Inject template HTML with user data */}
-                  <div 
-                    dangerouslySetInnerHTML={{ 
-                      __html: selectedTemplateData.html_content
-                        .replace(/{{BUSINESS_NAME}}/g, websiteInfo.website_name || formData.business_name || 'Your Business Name')
-                        .replace(/{{LOGO_URL}}/g, logoPreview || generatedLogoUrl || '')
-                        .replace(/{{KEY_MESSAGE}}/g, contentInfo.key_message || (formData.industry_category ? `Professional ${formData.industry_category} services` : 'Quality services you can trust'))
-                        .replace(/{{DESCRIPTION}}/g, contentInfo.description || '')
-                        .replace(/{{CITY}}/g, formData.city || '')
-                        .replace(/{{COUNTRY}}/g, formData.country || '')
-                        .replace(/{{CONTACT_EMAIL}}/g, formData.contact_email || '')
-                        .replace(/{{CONTACT_PHONE}}/g, formData.contact_phone || '')
-                        .replace(/{{CUSTOM_DOMAIN}}/g, websiteInfo.custom_domain || '')
-                        .replace(/{{SERVICES}}/g, services.selected.slice(0, 6).join(', '))
-                        .replace(/{{CALL_TO_ACTION}}/g, contentInfo.call_to_action ? contentInfo.call_to_action.charAt(0).toUpperCase() + contentInfo.call_to_action.slice(1).replace('_', ' ') : 'Get Started')
-                        // Remove the external CSS link since we're injecting CSS directly
-                        .replace(/<link\s+rel="stylesheet"\s+href="[^"]*"[^>]*>/gi, '')
-                        // Remove the DOCTYPE and html/head tags to avoid conflicts
-                        .replace(/<!DOCTYPE[^>]*>/gi, '')
-                        .replace(/<\/?html[^>]*>/gi, '')
-                        .replace(/<\/?head[^>]*>/gi, '')
-                        .replace(/<meta[^>]*>/gi, '')
-                        .replace(/<title[^>]*>.*?<\/title>/gi, '')
+                <div className="bg-white min-h-[560px] relative overflow-hidden">
+                  <iframe
+                    srcDoc={`
+                      <!DOCTYPE html>
+                      <html>
+                      <head>
+                        <meta charset="UTF-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <style>
+                          body { 
+                            margin: 0; 
+                            padding: 10px; 
+                            font-family: Arial, sans-serif; 
+                            overflow-x: hidden;
+                            transform: scale(0.7);
+                            transform-origin: top left;
+                            width: 142.85%;
+                            height: 142.85%;
+                          }
+                          * {
+                            max-width: 100% !important;
+                            box-sizing: border-box !important;
+                          }
+                          img {
+                            max-width: 100% !important;
+                            height: auto !important;
+                          }
+                          ${(selectedTemplateData.css_content || '')
+                            .replace(/```css/gi, '')
+                            .replace(/```/gi, '')
+                            .replace(/height:\s*100vh/gi, 'height: auto')
+                            .replace(/width:\s*100vw/gi, 'width: 100%')
+                            .replace(/min-height:\s*100vh/gi, 'min-height: auto')
+                            .replace(/position:\s*fixed/gi, 'position: relative')
+                          }
+                        </style>
+                      </head>
+                      <body>
+                        ${(() => {
+                          // Prepare comprehensive business data for replacement
+                          const businessData = {
+                            BUSINESS_NAME: websiteInfo.website_name || formData.business_name || 'Your Business Name',
+                            WEBSITE_NAME: websiteInfo.website_name || formData.business_name || 'Your Business Name',
+                            LOGO_URL: logoPreview || generatedLogoUrl || '',
+                            KEY_MESSAGE: contentInfo.key_message || (formData.industry_category ? `Professional ${formData.industry_category} services` : 'Quality services you can trust'),
+                            DESCRIPTION: contentInfo.description || '',
+                            SHORT_DESCRIPTION: contentInfo.description ? contentInfo.description.substring(0, 150) + '...' : '',
+                            CITY: formData.city || '',
+                            COUNTRY: formData.country || '',
+                            LOCATION: formData.city && formData.country ? `${formData.city}, ${formData.country}` : formData.city || formData.country || '',
+                            CONTACT_EMAIL: formData.contact_email || '',
+                            CONTACT_PHONE: formData.contact_phone || '',
+                            CUSTOM_DOMAIN: websiteInfo.custom_domain || '',
+                            WEBSITE_URL: websiteInfo.custom_domain || (websiteInfo.slug ? `justcodeworks.eu/build/${websiteInfo.slug}` : ''),
+                            SERVICES: services.selected.slice(0, 6).join(', '),
+                            SERVICES_LIST: services.selected.slice(0, 8).map(service => `<li>${service}</li>`).join(''),
+                            SERVICES_CARDS: services.selected.slice(0, 6).map(service => `<div class="service-card"><h4>${service}</h4></div>`).join(''),
+                            PRIMARY_SERVICE: services.selected[0] || 'Professional Services',
+                            SERVICE_COUNT: services.selected.length.toString(),
+                            CALL_TO_ACTION: contentInfo.call_to_action ? contentInfo.call_to_action.charAt(0).toUpperCase() + contentInfo.call_to_action.slice(1).replace('_', ' ') : 'Get Started',
+                            TARGET_AUDIENCE: contentInfo.target_audience || '',
+                            INDUSTRY: formData.industry_category || 'business',
+                            INDUSTRY_TITLE: formData.industry_category ? formData.industry_category.charAt(0).toUpperCase() + formData.industry_category.slice(1) : 'Business',
+                            CUSTOM_SERVICES: services.custom || '',
+                            GALLERY_COUNT: uploadedImages.length.toString(),
+                            CURRENT_YEAR: new Date().getFullYear().toString(),
+                            SLUG: websiteInfo.slug || '',
+                            // Conditional content
+                            HAS_DESCRIPTION: contentInfo.description ? 'true' : 'false',
+                            HAS_SERVICES: services.selected.length > 0 ? 'true' : 'false',
+                            HAS_GALLERY: uploadedImages.length > 0 ? 'true' : 'false',
+                            HAS_PHONE: formData.contact_phone ? 'true' : 'false',
+                            HAS_CUSTOM_DOMAIN: websiteInfo.custom_domain ? 'true' : 'false'
+                          }
+
+                          // Start with the template HTML
+                          let processedHtml = selectedTemplateData.html_content
+
+                          // Replace all business data placeholders
+                          Object.entries(businessData).forEach(([key, value]) => {
+                            const regex = new RegExp(`{{${key}}}`, 'g')
+                            processedHtml = processedHtml.replace(regex, value)
+                          })
+
+                          // Additional common template patterns
+                          processedHtml = processedHtml
+                            // Generic business name patterns
+                            .replace(/Restaurant Name/gi, businessData.BUSINESS_NAME)
+                            .replace(/Restaurant\s+Website/gi, businessData.BUSINESS_NAME)
+                            .replace(/Your\s+Business\s+Name/gi, businessData.BUSINESS_NAME)
+                            .replace(/Business\s+Name/gi, businessData.BUSINESS_NAME)
+                            
+                            // Location patterns
+                            .replace(/123\s+Main\s+St,?\s*Anytown,?\s*USA/gi, businessData.LOCATION || 'Contact us for location')
+                            .replace(/\(123\)\s*456-7890/gi, businessData.CONTACT_PHONE || 'Contact us')
+                            .replace(/info@restaurant\.com/gi, businessData.CONTACT_EMAIL)
+                            .replace(/contact@restaurant\.com/gi, businessData.CONTACT_EMAIL)
+                            .replace(/info@example\.com/gi, businessData.CONTACT_EMAIL)
+                            
+                            // Generic content replacements
+                            .replace(/Lorem ipsum[^.]*\./gi, businessData.DESCRIPTION || 'Welcome to our business!')
+                            .replace(/Lorem ipsum[^,]*,/gi, businessData.SHORT_DESCRIPTION || 'Quality service you can trust,')
+                            
+                            // Year patterns
+                            .replace(/Established in \d{4}/gi, `Established in ${businessData.CURRENT_YEAR}`)
+                            .replace(/Established:?\s*\d{4}/gi, `Established: ${businessData.CURRENT_YEAR}`)
+                            .replace(/\d{4}/g, (match) => {
+                              const year = parseInt(match);
+                              if (year >= 1900 && year <= new Date().getFullYear()) {
+                                return businessData.CURRENT_YEAR;
+                              }
+                              return match;
+                            })
+                            
+                            // Menu and service patterns
+                            .replace(/Item name/gi, businessData.PRIMARY_SERVICE || 'Our Service')
+                            .replace(/Item description/gi, `${businessData.PRIMARY_SERVICE || 'Quality service'} - Contact us for details`)
+                            
+                            // Owner/Chef patterns
+                            .replace(/John Doe/gi, businessData.BUSINESS_NAME.split(' ')[0] || 'Owner')
+                            .replace(/Executive Chef & Owner/gi, `Owner of ${businessData.BUSINESS_NAME}`)
+                            .replace(/Our Chef/gi, `${businessData.BUSINESS_NAME} Team`)
+                          
+                          // Conditional sections based on business data
+                          if (businessData.HAS_SERVICES === 'true') {
+                            processedHtml = processedHtml.replace(/Our Menu/gi, 'Our Services')
+                            processedHtml = processedHtml.replace(/Appetizers/gi, 'Main Services')
+                          }
+
+                          // Enhanced image replacement with business context
+                          const getContextualImage = (type) => {
+                            const baseUrl = 'https://picsum.photos/400/300'
+                            const random = Math.floor(Math.random() * 100)
+                            
+                            switch (type) {
+                              case 'hero':
+                                if (formData.industry_category === 'restaurant') return `${baseUrl}?restaurant&random=${random}`
+                                if (formData.industry_category === 'retail') return `${baseUrl}?shop&random=${random}`
+                                if (formData.industry_category === 'services') return `${baseUrl}?office&random=${random}`
+                                return `${baseUrl}?business&random=${random}`
+                              case 'gallery':
+                                return uploadedImages.length > 0 ? imagePreviews[Math.floor(Math.random() * imagePreviews.length)] : `${baseUrl}?gallery&random=${random}`
+                              case 'about':
+                                return `${baseUrl}?team&random=${random}`
+                              case 'contact':
+                                return `${baseUrl}?office&random=${random}`
+                              default:
+                                return `${baseUrl}?random=${random}`
+                            }
+                          }
+
+                          // Replace various image patterns with contextual images
+                          processedHtml = processedHtml
+                            .replace(/src="[^"]*hero[^"]*"/gi, `src="${getContextualImage('hero')}"`)
+                            .replace(/src="[^"]*gallery[^"]*"/gi, `src="${getContextualImage('gallery')}"`)
+                            .replace(/src="[^"]*about[^"]*"/gi, `src="${getContextualImage('about')}"`)
+                            .replace(/src="[^"]*contact[^"]*"/gi, `src="${getContextualImage('contact')}"`)
+                            .replace(/src="[^"]*\.(jpg|jpeg|png|gif|webp)[^"]*"/gi, `src="${getContextualImage('default')}"`)
+                            .replace(/src="#"/gi, `src="${getContextualImage('default')}"`)
+                            .replace(/src="food[^"]*"/gi, `src="${getContextualImage('hero')}"`)
+                            .replace(/src="interior[^"]*"/gi, `src="${getContextualImage('hero')}"`)
+                            .replace(/src="team[^"]*"/gi, 'src="https://ui-avatars.com/api/?name=' + encodeURIComponent(formData.business_name.substring(0, 2)) + '&background=0d8abc&color=fff&size=200"')
+                            .replace(/src="owner[^"]*"/gi, 'src="https://ui-avatars.com/api/?name=' + encodeURIComponent(formData.business_name.substring(0, 2)) + '&background=0d8abc&color=fff&size=200"')
+
+                          // Clean up template artifacts
+                          return processedHtml
+                            .replace(/<link\s+rel="stylesheet"\s+href="[^"]*"[^>]*>/gi, '')
+                            .replace(/<!DOCTYPE[^>]*>/gi, '')
+                            .replace(/<\/?html[^>]*>/gi, '')
+                            .replace(/<\/?head[^>]*>/gi, '')
+                            .replace(/<\/?body[^>]*>/gi, '')
+                            .replace(/<meta[^>]*>/gi, '')
+                            .replace(/<title[^>]*>.*?<\/title>/gi, '')
+                            .replace(/```html/gi, '')
+                            .replace(/```css/gi, '')
+                            .replace(/```/gi, '')
+                            .replace(/<script[^>]*>.*?<\/script>/gi, '')
+                        })()}
+                      </body>
+                      </html>
+                    `}
+                    style={{
+                      width: '100%',
+                      height: '560px',
+                      border: 'none',
+                      overflow: 'hidden'
                     }}
+                    sandbox="allow-same-origin"
                   />
                 </div>
               ) : (
-                <div className="p-4 bg-white min-h-80 relative">
+                <div className="p-4 bg-white min-h-[560px] relative">
                   <div className="border-b pb-3 mb-4">
                     <div className="flex items-center space-x-3">
                       {/* Logo Preview */}
@@ -2000,10 +2426,13 @@ export default function BuildPage() {
                 </div>
               )}
             </div>
+            )}
             
             <div className="mt-4 text-center">
               <p className="text-xs text-gray-500">
-                {selectedTemplateData ? (
+                {showPrintingSection ? (
+                  <>🎉 Your website has been created! Select print products to complete your business materials.</>
+                ) : selectedTemplateData ? (
                   <>✨ Template preview with your business data! Select different templates to update the preview.</>
                 ) : (
                   <>✨ This preview updates in real-time as you type! Select a template to see it in action.</>

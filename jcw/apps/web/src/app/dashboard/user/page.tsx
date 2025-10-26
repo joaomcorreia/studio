@@ -33,21 +33,95 @@ export default function UserDashboard() {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api'
       
-      // Fetch tenant info
-      const tenantResponse = await fetch(`${apiUrl}/tenant/info/`)
-      if (tenantResponse.ok) {
-        const tenantData = await tenantResponse.json()
-        setTenantInfo(tenantData)
+      // Get auth token (optional for development)
+      const token = localStorage.getItem('access_token')
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      }
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+      
+      // Fetch tenant info - using correct endpoint
+      try {
+        const tenantResponse = await fetch(`${apiUrl}/tenants/`, { headers })
+        if (tenantResponse.ok) {
+          const tenantData = await tenantResponse.json()
+          // If it's an array, take the first one, otherwise use the data directly
+          setTenantInfo(Array.isArray(tenantData) ? tenantData[0] : tenantData)
+        }
+      } catch (tenantError) {
+        console.error('Failed to fetch tenant info:', tenantError)
+        // Use mock data for development
+        setTenantInfo({
+          id: 1,
+          business_name: "Demo Business",
+          slug: "demo-business",
+          contact_email: "demo@business.com",
+          industry_category: "retail",
+          is_active: true
+        })
       }
 
       // Fetch pages
-      const pagesResponse = await fetch(`${apiUrl}/pages/`)
-      if (pagesResponse.ok) {
-        const pagesData = await pagesResponse.json()
-        setPages(pagesData.results || pagesData)
+      try {
+        const pagesResponse = await fetch(`${apiUrl}/pages/`, { headers })
+        if (pagesResponse.ok) {
+          const pagesData = await pagesResponse.json()
+          setPages(pagesData.results || pagesData || [])
+        }
+      } catch (pagesError) {
+        console.error('Failed to fetch pages:', pagesError)
+        // Use mock data for development
+        setPages([
+          {
+            id: 1,
+            title: "Home Page",
+            slug: "home",
+            status: "published",
+            sections_count: 5,
+            updated_at: new Date().toISOString()
+          },
+          {
+            id: 2,
+            title: "About Us",
+            slug: "about",
+            status: "draft",
+            sections_count: 3,
+            updated_at: new Date().toISOString()
+          },
+          {
+            id: 3,
+            title: "Contact",
+            slug: "contact",
+            status: "published",
+            sections_count: 2,
+            updated_at: new Date().toISOString()
+          }
+        ])
       }
     } catch (error) {
       console.error('Failed to fetch dashboard data:', error)
+      // Fallback to mock data for easier development
+      setTenantInfo({
+        id: 1,
+        business_name: "Demo Business",
+        slug: "demo-business", 
+        contact_email: "demo@business.com",
+        industry_category: "retail",
+        is_active: true
+      })
+      setPages([
+        {
+          id: 1,
+          title: "Home Page",
+          slug: "home",
+          status: "published",
+          sections_count: 5,
+          updated_at: new Date().toISOString()
+        }
+      ])
     } finally {
       setLoading(false)
     }
@@ -56,11 +130,18 @@ export default function UserDashboard() {
   const createNewPage = async () => {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api'
+      const token = localStorage.getItem('access_token')
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      }
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+      
       const response = await fetch(`${apiUrl}/pages/`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify({
           title: 'New Page',
           slug: `page-${Date.now()}`,
@@ -92,13 +173,32 @@ export default function UserDashboard() {
     )
   }
 
+
+
   const devUrl = tenantInfo ? `http://${tenantInfo.slug}.lvh.me:3000` : '#'
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">
+      <h1 className="text-3xl font-bold text-gray-900 mb-4">
         {tenantInfo?.business_name ? `${tenantInfo.business_name} Dashboard` : 'My Site Overview'}
       </h1>
+      
+      {/* Development Notice */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+        <div className="flex items-start">
+          <div className="flex-shrink-0">
+            <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <div className="ml-3">
+            <h3 className="text-sm font-medium text-blue-800">Development Mode</h3>
+            <div className="mt-1 text-sm text-blue-700">
+              <p>This dashboard shows mock data when API endpoints are not available. Perfect for frontend development!</p>
+            </div>
+          </div>
+        </div>
+      </div>
       
       <div className="bg-white rounded-lg shadow p-6 mb-8">
         <div className="flex justify-between items-start mb-4">
